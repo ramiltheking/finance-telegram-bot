@@ -17,9 +17,10 @@ return new class extends Migration
             $table->string('username')->nullable();
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
+            $table->json('operations')->nullable();
             $table->timestamp('trial_started_at')->nullable();
             $table->timestamp('trial_ends_at')->nullable();
-            $table->enum('subscription_status', ['trial', 'active', 'expired', 'cancelled'])->default('trial');
+            $table->enum('subscription_status', ['trial','active','expired','cancelled'])->default('trial');
             $table->timestamps();
         });
 

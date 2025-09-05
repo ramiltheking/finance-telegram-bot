@@ -17,11 +17,10 @@ return new class extends Migration
             $table->enum('type', ['income', 'expense']);
             $table->decimal('amount', 14, 2);
             $table->string('currency', 3)->default('KZT');
-            $table->decimal('amount_kzt', 14, 2);
             $table->string('category')->nullable();
             $table->text('description')->nullable();
             $table->timestamp('occurred_at')->nullable();
-            $table->jsonb('meta')->nullable();
+            $table->json('meta')->nullable();
             $table->timestamps();
         });
     }
