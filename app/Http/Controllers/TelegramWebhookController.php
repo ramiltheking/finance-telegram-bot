@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 use App\Services\TelegramService;
+use App\Services\UserService;
 use App\Services\OpenAIService;
 use App\Services\PaymentService;
+
 use App\Models\User;
 use App\Models\Payment;
 use App\Models\Operation;
@@ -26,6 +29,16 @@ class TelegramWebhookController extends Controller
     {
         $update = $request->all();
         Log::info('TG Update:', $update);
+
+        $from = $update['message']['chat']
+            ?? $update['callback_query']['chat']
+            ?? $update['inline_query']['chat']
+            ?? null;
+
+        if ($from) {
+            $user = UserService::registerOrUpdate($from);
+            Log::info("Проверка и создание user:", $user->toArray());
+        }
 
         if (isset($update['message'])) {
             $this->handleMessage($update['message']);
@@ -54,10 +67,10 @@ class TelegramWebhookController extends Controller
         if (isset($message['voice'])) {
             $fileId = $message['voice']['file_id'];
 
-            $fileResp = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/getFile", ['file_id' => $fileId]);
+            $fileResp = Http::get("https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/getFile", ['file_id' => $fileId]);
             if ($fileResp->ok() && $fileResp->json('result.file_path')) {
                 $filePath = $fileResp->json('result.file_path');
-                $fileContents = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/file/bot" . env('TELEGRAM_BOT_TOKEN') . "/{$filePath}");
+                $fileContents = Http::get("https://api.telegram.org/file/bot" . env('TELEGRAM_BOT_TOKEN') . "/{$filePath}");
                 if ($fileContents->ok()) {
                     $binary = $fileContents->body();
                     $transcript = $this->ai->transcribeAudio($binary);
@@ -176,7 +189,7 @@ class TelegramWebhookController extends Controller
     protected function sendWorkInfo($chatId)
     {
         $text =
-        `🤖 *Финансовый помощник* — это умный бот для учёта ваших доходов и расходов.
+            `🤖 *Финансовый помощник* — это умный бот для учёта ваших доходов и расходов.
 
             📌 Как он работает:
             1️⃣ Нажмите *Старт*
