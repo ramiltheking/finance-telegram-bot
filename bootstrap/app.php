@@ -1,5 +1,6 @@
 <?php
 
+use App\Facades\Telegram;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,5 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->reportable(function (Throwable $e) {
+            $text = view('telegram.error', ['e' => $e])->render();
+            Telegram::message(1136094655, $text)->send();
+        });
     })->create();

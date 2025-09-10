@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('chat_id')->nullable();
-            $table->string('inv_id')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('inv_id')->nullable();
             $table->decimal('amount', 12, 2)->nullable();
             $table->string('status')->default('pending');
             $table->json('payload')->nullable();
