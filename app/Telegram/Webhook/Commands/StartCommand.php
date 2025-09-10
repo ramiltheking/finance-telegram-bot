@@ -9,7 +9,6 @@ class StartCommand extends Webhook
 {
     public function run()
     {
-        $chatId = $this->request->input('message')['from']['id'];
         $first_name = $this->request->input('message')['from']['first_name'];
         $buttons = [
             'inline_keyboard' => [
@@ -20,6 +19,6 @@ class StartCommand extends Webhook
             ]
         ];
 
-        return Telegram::inlineButtons($chatId, "👋 Добро пожаловать, {$first_name}!", $buttons)->send();
+        return Telegram::inlineButtons($this->chat_id, "👋 Добро пожаловать, {$first_name}!", $buttons)->send();
     }
 }

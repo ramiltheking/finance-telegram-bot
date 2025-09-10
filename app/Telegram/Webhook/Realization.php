@@ -3,6 +3,7 @@
 namespace App\Telegram\Webhook;
 
 use App\Services\UserService;
+use App\Telegram\Webhook\Commands\ReportCommand;
 use App\Telegram\Webhook\Commands\StartCommand;
 use App\Telegram\Webhook\Text\Text;
 use App\Telegram\Webhook\Voice\VoiceMessage;
@@ -12,6 +13,7 @@ class Realization
 {
     protected const Commands = [
         '/start' => StartCommand::class,
+        '/report' => ReportCommand::class,
     ];
 
     public function take(Request $request)
@@ -36,7 +38,13 @@ class Realization
         elseif ($request->input('callback_query'))
         {
             $data = $request->input('callback_query')['data'];
-            return '\App\Telegram\Webhook\Action\\' . $data;
+            $class = '\App\Telegram\Webhook\Action\\' . $data;
+
+            if (class_exists($class)) {
+                return $class;
+            }
+
+            return null;
         }
 
         elseif ($request->input('message.voice'))

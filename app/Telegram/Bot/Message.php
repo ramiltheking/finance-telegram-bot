@@ -49,15 +49,20 @@ class Message extends Bot
         return $this;
     }
 
-    public function editButtons(mixed $chat_id, string $text, array $buttons, int $message_id) {
+    public function editButtons(mixed $chat_id, string $text, ?array $buttons, int $message_id)
+    {
         $this->method = 'editMessageText';
         $this->data = [
             'chat_id' => $chat_id,
             'text' => $text,
             'parse_mode' => "html",
-            'reply_markup' => $buttons,
             'message_id' => $message_id,
         ];
+
+        if ($buttons !== null) {
+            $this->data['reply_markup'] = $buttons;
+        }
+
         return $this;
     }
 }

@@ -16,7 +16,7 @@ class Webhook {
     }
 
     public function run() {
-        return Telegram::message(env("TELEGRAM_DEV_CHAT"), 'Не удалось обработать сообщение!')->send();
+        return Telegram::message(env("TELEGRAM_DEV_CHAT"), "Не удалось обработать сообщение! Подробности:\n<code>{$this->request}</code>")->send();
     }
 
     final public function getChatId()
