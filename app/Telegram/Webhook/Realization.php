@@ -3,7 +3,13 @@
 namespace App\Telegram\Webhook;
 
 use App\Services\UserService;
+use App\Telegram\Webhook\Commands\DeleteCommand;
+use App\Telegram\Webhook\Commands\DeleteLastCommand;
+use App\Telegram\Webhook\Commands\EditCommand;
+use App\Telegram\Webhook\Commands\ListCommand;
 use App\Telegram\Webhook\Commands\ReportCommand;
+use App\Telegram\Webhook\Commands\FullReportCommand;
+use App\Telegram\Webhook\Commands\RemindCommand;
 use App\Telegram\Webhook\Commands\StartCommand;
 use App\Telegram\Webhook\Text\Text;
 use App\Telegram\Webhook\Voice\VoiceMessage;
@@ -13,7 +19,13 @@ class Realization
 {
     protected const Commands = [
         '/start' => StartCommand::class,
+        '/list' => ListCommand::class,
         '/report' => ReportCommand::class,
+        '/fullreport' => FullReportCommand::class,
+        '/delete' => DeleteCommand::class,
+        '/delete_last' => DeleteLastCommand::class,
+        '/edit' => EditCommand::class,
+        '/remind' => RemindCommand::class,
     ];
 
     public function take(Request $request)

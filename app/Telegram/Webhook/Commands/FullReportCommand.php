@@ -8,7 +8,7 @@ use App\Facades\Telegram;
 use App\Models\User;
 use App\Telegram\Webhook\Webhook;
 
-class ReportCommand extends Webhook
+class FullReportCommand extends Webhook
 {
     public function run()
     {
@@ -20,11 +20,7 @@ class ReportCommand extends Webhook
             return;
         }
 
-        $oneWeekAgo = Carbon::now()->subDays(7);
-
-        $operations = Operation::where('user_id', $userId)
-            ->where('occurred_at', '>=', $oneWeekAgo)
-            ->get();
+        $operations = Operation::where('user_id', $userId)->get();
 
         if ($operations->isEmpty()) {
             Telegram::message($this->chat_id, "❗ Нет операций для отображения")->send();
@@ -51,7 +47,7 @@ class ReportCommand extends Webhook
             $categoryTotals[$cat] += $amount;
         }
 
-        $message = "📊 Отчет за неделю:\n\n";
+        $message = "📊 Полный отчет:\n\n";
         $message .= "Общая сумма расходов: {$totalSpent} {$operations->first()->currency}\n";
         $message .= "Общая сумма доходов: {$totalClaimed} {$operations->first()->currency}\n\n";
         $message .= "Суммы по категориям:\n";
