@@ -3,8 +3,11 @@
 namespace App\Telegram\Webhook\Voice;
 
 use App\Facades\Telegram;
+use App\Models\User;
 use App\Services\OpenAIService;
+use App\Telegram\Helpers\InlineButton;
 use App\Telegram\Webhook\Webhook;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -87,16 +90,29 @@ class VoiceMessage extends Webhook
             ? "✅ Добавить запись: Получил(-a) {$amount} {$currency} — {$title}"
             : "✅ Добавить запись: Потратил(-a) {$amount} {$currency} — {$title}";
 
-        $keyboard = [
-            'inline_keyboard' => [
-                [
-                    ['text' => '✅ Подтвердить', 'callback_data' => 'Confirm'],
-                    ['text' => '❌ Отклонить', 'callback_data' => 'Decline'],
-                ],
-            ]
-        ];
+        $user = User::where('telegram_id', $this->chat_id)->first();
 
-        Telegram::inlineButtons($this->chat_id, $userText, $keyboard)->send();
+        if (!$user) {
+            Telegram::message($this->chat_id, "❗ Пользователь не найден.")->send();
+            return;
+        }
+
+        $operationId = DB::table('operations')->insertGetId([
+            'user_id'     => $this->chat_id,
+            'type'        => $operation['type'],
+            'amount'      => $operation['amount'],
+            'currency'    => $operation['currency'],
+            'category'    => $operation['category'] ?? null,
+            'description' => $operation['title'] ?? null,
+            'occurred_at' => now(),
+            'meta'        => null,
+            'created_at'  => now(),
+            'updated_at'  => now(),
+        ]);
+
+        InlineButton::add('✅ Подтвердить', 'Confirm', ['operation_id' => $operationId,], 1);
+        InlineButton::add('❌ Отклонить', 'Decline', ['operation_id' => $operationId,], 1);
+        Telegram::inlineButtons($this->chat_id, $userText, InlineButton::$buttons)->send();
 
         Log::info("Операция для подтверждения", $operation);
         return $operation;

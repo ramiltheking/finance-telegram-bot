@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('operations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('telegram_id')->on('users')->cascadeOnDelete();
             $table->enum('type', ['income', 'expense']);
             $table->decimal('amount', 14, 2);
             $table->string('currency', 3)->default('KZT');
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->timestamp('occurred_at')->nullable();
             $table->json('meta')->nullable();
+            $table->enum('status', ['pending', 'confirmed', 'declined'])->default('pending');
             $table->timestamps();
         });
     }

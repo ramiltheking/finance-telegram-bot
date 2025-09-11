@@ -3,7 +3,6 @@
 namespace App\Telegram\Webhook\Commands;
 
 use App\Models\Operation;
-use App\Models\User;
 use Carbon\Carbon;
 use App\Facades\Telegram;
 use App\Telegram\Webhook\Webhook;

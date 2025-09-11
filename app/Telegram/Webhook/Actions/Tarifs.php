@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Telegram\Webhook\Action;
+namespace App\Telegram\Webhook\Actions;
 
 use App\Facades\Telegram;
 use App\Models\Payment;

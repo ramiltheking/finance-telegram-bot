@@ -35,16 +35,10 @@ class Realization
             }
         }
 
-        elseif ($request->input('callback_query'))
+        elseif($request->input('callback_query'))
         {
-            $data = $request->input('callback_query')['data'];
-            $class = '\App\Telegram\Webhook\Action\\' . $data;
-
-            if (class_exists($class)) {
-                return $class;
-            }
-
-            return null;
+            $data = json_decode($request->input('callback_query')['data']);
+            return '\App\Telegram\Webhook\Actions\\' . $data->action;
         }
 
         elseif ($request->input('message.voice'))
