@@ -16,12 +16,16 @@ class User extends Authenticatable
         'last_name',
         'trial_started_at',
         'trial_ends_at',
+        'subscription_started_at',
+        'subscription_ends_at',
         'subscription_status',
     ];
 
     protected $casts = [
         'trial_started_at' => 'datetime',
         'trial_ends_at' => 'datetime',
+        'subscription_started_at' => 'datetime',
+        'subscription_ends_at' => 'datetime',
     ];
 
     public function operations()

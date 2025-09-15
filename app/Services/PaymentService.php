@@ -3,7 +3,6 @@
 namespace App\Services;
 
 class PaymentService
-
 {
     public static function makeSignature(string $login, string $outSum, string $invId, string $password1): string {
         return strtoupper(md5("{$login}:{$outSum}:{$invId}:{$password1}"));

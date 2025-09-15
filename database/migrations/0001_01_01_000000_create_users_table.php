@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('last_name')->nullable();
             $table->timestamp('trial_started_at')->nullable();
             $table->timestamp('trial_ends_at')->nullable();
+            $table->timestamp('subscription_started_at')->nullable();
+            $table->timestamp('subscription_ends_at')->nullable();
             $table->enum('subscription_status', ['trial','active','expired','cancelled'])->default('trial');
             $table->timestamps();
         });

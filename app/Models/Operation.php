@@ -8,9 +8,21 @@ use Illuminate\Database\Eloquent\Model;
 class Operation extends Model {
     use HasFactory;
 
-    protected $fillable = ['user_id','type','amount','currency','category','description','occurred_at','meta'];
+    protected $fillable = [
+        'user_id',
+        'type',
+        'amount',
+        'currency',
+        'category',
+        'description',
+        'occurred_at',
+        'meta'
+    ];
 
-    protected $casts = ['occurred_at'=>'datetime','meta'=>'array'];
+    protected $casts = [
+        'occurred_at'=>'datetime',
+        'meta'=>'array',
+    ];
 
     public function user() {
         return $this->belongsTo(User::class);

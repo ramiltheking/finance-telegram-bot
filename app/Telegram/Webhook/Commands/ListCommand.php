@@ -3,6 +3,7 @@
 namespace App\Telegram\Webhook\Commands;
 
 use App\Facades\Telegram;
+use App\Models\Category;
 use App\Models\User;
 use App\Models\Operation;
 use App\Telegram\Webhook\Webhook;
@@ -29,14 +30,21 @@ class ListCommand extends Webhook
             return;
         }
 
+        $categoryMapById   = Category::pluck('name_ru', 'id')->toArray();
+        $categoryMapByName = Category::pluck('name_ru', 'name_en')->toArray();
+
         $message = "📋 Список операций за последнюю неделю:\n\n";
 
         foreach ($operations as $index => $op) {
+            $category = $categoryMapById[$op->category]
+                ?? $categoryMapByName[$op->category]
+                ?? $op->category;
+
             $message .= sprintf(
-                "%d. %s %s (%s), сумма: %s, дата: %s\n",
+                "%d) %s %s (%s), сумма: %s, дата: %s\n",
                 $index + 1,
                 $op->type === 'income' ? '➕' : '➖',
-                $op->category ?? 'Без категории',
+                $category ?? 'Без категории',
                 $op->currency,
                 $op->amount,
                 $op->occurred_at->format('d.m.Y')

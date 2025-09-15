@@ -29,4 +29,14 @@ class InlineButton
             'url' => $url,
         ];
     }
+
+    public static function web_app(mixed $text, string $url, int $row = 1)
+    {
+        self::$buttons['inline_keyboard'][$row-1][] = [
+            'text' => $text,
+            'web_app' => [
+                'url' => $url
+            ],
+        ];
+    }
 }

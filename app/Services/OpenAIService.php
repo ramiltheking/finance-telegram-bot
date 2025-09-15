@@ -49,7 +49,77 @@ class OpenAIService
             "occurred_at": "YYYY-MM-DD"
             }
 
-            If unknown return null fields.
+            Rules:
+            1) For "category", strictly use one of the predefined categories below. If none match, return "Other".
+            2) Do not invent new categories.
+            3) "type" must be "income" if the category is from INCOME list, or "expense" if from EXPENSE list.
+            4) "occurred_at" must be today’s date if not explicitly mentioned.
+
+            Available categories:
+
+            {
+                "INCOME": [
+                    "Salary",
+                    "Freelance",
+                    "Investments",
+                    "Rent",
+                    "Sales",
+                    "Side Jobs",
+                    "Gifts",
+                    "Social Payments",
+                    "Cashback",
+                    "Online Projects",
+                    "Royalties",
+                    "Debt Return",
+                    "Prizes",
+                    "Currency Exchange Profit",
+                    "Digital Assets Sale"
+                ],
+                "EXPENSE": [
+                    "Housing",
+                    "Rent / Mortgage",
+                    "Utilities",
+                    "Internet & Mobile",
+                    "Household Goods",
+                    "Furniture & Appliances",
+                    "Clothes",
+                    "Beauty & Care",
+                    "Hairdresser",
+                    "Gifts to Others",
+                    "Pets",
+                    "Groceries",
+                    "Restaurants",
+                    "Coffee & Snacks",
+                    "Food Delivery",
+                    "Public Transport",
+                    "Taxi",
+                    "Fuel",
+                    "Car Maintenance",
+                    "Travel Tickets",
+                    "Cinema & Theatre",
+                    "Games",
+                    "Music & Concerts",
+                    "Sport & Fitness",
+                    "Travel",
+                    "Bars & Clubs",
+                    "Books",
+                    "Courses",
+                    "Tutors",
+                    "Doctors",
+                    "Medicine",
+                    "Dentist",
+                    "Fitness & Yoga",
+                    "Smartphones & Gadgets",
+                    "Computers",
+                    "Subscriptions",
+                    "Online Services",
+                    "Credits & Debts",
+                    "Transfers",
+                    "Investments Purchase",
+                    "Insurance",
+                    "Currency Exchange"
+                ]
+            }
         PROMPT;
 
         try {

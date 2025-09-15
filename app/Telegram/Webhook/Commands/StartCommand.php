@@ -15,6 +15,7 @@ class StartCommand extends Webhook
         InlineButton::link('Политика конфиденциальности', 'https://docs.google.com/document/d/1H6EKhbYHNcoV7w5Yr6vcgtE2868MIHxujTNtbOrddUE/edit?usp=sharing', 2);
         InlineButton::add('Информация о работе бота', 'WorkInfo', [], 3);
         InlineButton::add('Доступные тарифы', 'Tarifs', [], 4);
+        InlineButton::web_app('Открыть Mini App', 'https://04dce5510bc2.ngrok-free.app/miniapp', 5);
         return Telegram::inlineButtons($this->chat_id, "👋 Добро пожаловать, {$first_name}!", InlineButton::$buttons)->send();
     }
 }

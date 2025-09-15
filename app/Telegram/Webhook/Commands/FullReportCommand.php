@@ -3,7 +3,7 @@
 namespace App\Telegram\Webhook\Commands;
 
 use App\Models\Operation;
-use Carbon\Carbon;
+use App\Models\Category;
 use App\Facades\Telegram;
 use App\Models\User;
 use App\Telegram\Webhook\Webhook;
@@ -31,6 +31,8 @@ class FullReportCommand extends Webhook
         $totalClaimed = 0;
         $categoryTotals = [];
 
+        $categoryMap = Category::pluck('name_ru', 'name_en')->toArray();
+
         foreach ($operations as $op) {
             $amount = (float)$op->amount;
 
@@ -40,20 +42,24 @@ class FullReportCommand extends Webhook
                 $totalClaimed += $amount;
             }
 
-            $cat = $op->category ?? 'Без категории';
-            if (!isset($categoryTotals[$cat])) {
-                $categoryTotals[$cat] = 0;
+            $catCode = $op->category;
+            $catName = $categoryMap[$catCode] ?? 'Без категории';
+
+            if (!isset($categoryTotals[$catName])) {
+                $categoryTotals[$catName] = 0;
             }
-            $categoryTotals[$cat] += $amount;
+            $categoryTotals[$catName] += $amount;
         }
 
+        $currency = $operations->first()->currency;
+
         $message = "📊 Полный отчет:\n\n";
-        $message .= "Общая сумма расходов: {$totalSpent} {$operations->first()->currency}\n";
-        $message .= "Общая сумма доходов: {$totalClaimed} {$operations->first()->currency}\n\n";
+        $message .= "Общая сумма расходов: " . number_format($totalSpent, 2, '.', ' ') . " {$currency}\n";
+        $message .= "Общая сумма доходов: " . number_format($totalClaimed, 2, '.', ' ') . " {$currency}\n\n";
         $message .= "Суммы по категориям:\n";
 
         foreach ($categoryTotals as $category => $total) {
-            $message .= "{$category}: {$total}\n";
+            $message .= "{$category}: " . number_format($total, 2, '.', ' ') . " {$currency}\n";
         }
 
         Telegram::message($this->chat_id, $message)->send();
