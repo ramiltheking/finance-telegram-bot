@@ -20,6 +20,7 @@ class DeleteLastCommand extends Webhook
         }
 
         $lastOperation = Operation::where('user_id', $userId)
+            ->where('status', 'confirmed')
             ->orderByDesc('created_at')
             ->first();
 

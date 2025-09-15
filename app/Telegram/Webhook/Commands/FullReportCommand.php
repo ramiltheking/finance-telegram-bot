@@ -20,7 +20,7 @@ class FullReportCommand extends Webhook
             return;
         }
 
-        $operations = Operation::where('user_id', $userId)->get();
+        $operations = Operation::where('user_id', $userId)->where('status', 'confirmed')->get();
 
         if ($operations->isEmpty()) {
             Telegram::message($this->chat_id, "❗ Нет операций для отображения")->send();

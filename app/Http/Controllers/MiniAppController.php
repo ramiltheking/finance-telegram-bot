@@ -22,7 +22,8 @@ class MiniAppController extends Controller
 
         $operations = Operation::where('user_id', $telegramId)
             ->where('occurred_at', '>=', $from)
-            ->orderBy('occurred_at', 'desc')
+            ->where('status', 'confirmed')
+            ->orderByDesc('occurred_at')
             ->get();
 
         $categoryMapById = Category::pluck('name_ru', 'id')->toArray();

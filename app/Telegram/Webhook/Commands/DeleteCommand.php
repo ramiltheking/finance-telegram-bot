@@ -34,7 +34,8 @@ class DeleteCommand extends Webhook
 
         $operations = Operation::where('user_id', $user->telegram_id)
             ->where('occurred_at', '>=', now()->subDays(7))
-            ->orderBy('occurred_at', 'desc')
+            ->where('status', 'confirmed')
+            ->orderByDesc('occurred_at')
             ->get();
 
         if (!isset($operations[$index - 1])) {

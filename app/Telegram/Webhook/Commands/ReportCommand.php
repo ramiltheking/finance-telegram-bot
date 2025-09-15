@@ -25,6 +25,7 @@ class ReportCommand extends Webhook
 
         $operations = Operation::where('user_id', $userId)
             ->where('occurred_at', '>=', $oneWeekAgo)
+            ->where('status', 'confirmed')
             ->get();
 
         if ($operations->isEmpty()) {

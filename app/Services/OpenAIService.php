@@ -54,6 +54,7 @@ class OpenAIService
             2) Do not invent new categories.
             3) "type" must be "income" if the category is from INCOME list, or "expense" if from EXPENSE list.
             4) "occurred_at" must be today’s date if not explicitly mentioned.
+            5) If the message is not a financial transaction, then return null
 
             Available categories:
 
