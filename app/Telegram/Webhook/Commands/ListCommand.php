@@ -16,7 +16,7 @@ class ListCommand extends Webhook
 
         $user = User::where('telegram_id', $userId)->first();
         if (!$user) {
-            Telegram::message($userId, '❗ Пользователь не найден')->send();
+            Telegram::message($userId, '❗ Пользователь не найден', $this->message_id)->send();
             return;
         }
 
@@ -27,7 +27,7 @@ class ListCommand extends Webhook
             ->get();
 
         if ($operations->isEmpty()) {
-            Telegram::message($userId, '❗ Нет операций за последнюю неделю')->send();
+            Telegram::message($userId, '❗ Нет операций за последнюю неделю', $this->message_id)->send();
             return;
         }
 

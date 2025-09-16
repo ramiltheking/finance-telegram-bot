@@ -14,14 +14,14 @@ class RemindCommand extends Webhook
         $text = trim(str_replace('/remind', '', $this->request->input('message.text')));
 
         if (!$text) {
-            Telegram::message($userId, '❗ Введите команду в виде /remind 00:00')->send();
+            Telegram::message($userId, '❗ Введите команду в виде /remind 00:00', $this->message_id)->send();
             return;
         }
 
         [$hours, $minutes] = array_pad(explode(':', $text), 2, null);
 
         if (!is_numeric($hours) || !is_numeric($minutes)) {
-            Telegram::message($userId, '❗ Неверный формат. Используйте HH:MM.')->send();
+            Telegram::message($userId, '❗ Неверный формат. Используйте HH:MM.', $this->message_id)->send();
             return;
         }
 

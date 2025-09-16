@@ -3,6 +3,7 @@
 namespace App\Telegram\Webhook;
 
 use App\Services\UserService;
+use App\Telegram\Webhook\Commands\BalanceCommand;
 use App\Telegram\Webhook\Commands\DeleteCommand;
 use App\Telegram\Webhook\Commands\DeleteLastCommand;
 use App\Telegram\Webhook\Commands\EditCommand;
@@ -26,6 +27,7 @@ class Realization
         '/delete_last' => DeleteLastCommand::class,
         '/edit' => EditCommand::class,
         '/remind' => RemindCommand::class,
+        '/balance' => BalanceCommand::class,
     ];
 
     public function take(Request $request)

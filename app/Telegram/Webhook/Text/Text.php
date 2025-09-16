@@ -20,7 +20,7 @@ class Text extends Webhook
         $operation = $openai->parseOperationFromText($text);
 
         if (!$operation) {
-            Telegram::message($this->chat_id, "❗ Не удалось распознать операцию")->send();
+            Telegram::message($this->chat_id, "❗ Не удалось распознать операцию", $this->message_id)->send();
             return ['error' => 'operation_parse_failed', 'text' => $text];
         }
 
@@ -58,7 +58,7 @@ class Text extends Webhook
         $user = User::where('telegram_id', $this->chat_id)->first();
 
         if (!$user) {
-            Telegram::message($this->chat_id, "❗ Пользователь не найден.")->send();
+            Telegram::message($this->chat_id, "❗ Пользователь не найден.", $this->message_id)->send();
             return;
         }
 

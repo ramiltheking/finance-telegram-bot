@@ -16,19 +16,19 @@ class DeleteCommand extends Webhook
         $args = explode(' ', $text);
 
         if (count($args) < 2) {
-            Telegram::message($userId, '❗ Неверный формат команды. Используйте /delete (номер)')->send();
+            Telegram::message($userId, '❗ Неверный формат команды. Используйте /delete (номер)', $this->message_id)->send();
             return;
         }
 
         $index = (int)$args[1];
         if ($index <= 0) {
-            Telegram::message($userId, '❗ Неверный формат команды. Используйте /delete (номер)')->send();
+            Telegram::message($userId, '❗ Неверный формат команды. Используйте /delete (номер)', $this->message_id)->send();
             return;
         }
 
         $user = User::where('telegram_id', $userId)->first();
         if (!$user) {
-            Telegram::message($userId, '❗ Пользователь не найден')->send();
+            Telegram::message($userId, '❗ Пользователь не найден', $this->message_id)->send();
             return;
         }
 
@@ -39,7 +39,7 @@ class DeleteCommand extends Webhook
             ->get();
 
         if (!isset($operations[$index - 1])) {
-            Telegram::message($userId, "❗ Операция номер {$index} не найдена")->send();
+            Telegram::message($userId, "❗ Операция номер {$index} не найдена", $this->message_id)->send();
             return;
         }
 

@@ -16,14 +16,14 @@ class FullReportCommand extends Webhook
 
         $user = User::where('telegram_id', $userId)->first();
         if (!$user) {
-            Telegram::message($userId, '❗ Пользователь не найден')->send();
+            Telegram::message($userId, '❗ Пользователь не найден', $this->message_id)->send();
             return;
         }
 
         $operations = Operation::where('user_id', $userId)->where('status', 'confirmed')->get();
 
         if ($operations->isEmpty()) {
-            Telegram::message($this->chat_id, "❗ Нет операций для отображения")->send();
+            Telegram::message($this->chat_id, "❗ Нет операций для отображения", $this->message_id)->send();
             return;
         }
 

@@ -25,7 +25,7 @@ class VoiceMessage extends Webhook
         $voiceDuration = $voice['duration'];
 
         if ($voiceDuration > 10) {
-            Telegram::message($this->chat_id, "❗ Длительность аудиосообщения превышает 10 секунд. Пожалуйста, отправьте более короткое сообщение.")->send();
+            Telegram::message($this->chat_id, "❗ Длительность аудиосообщения превышает 10 секунд. Пожалуйста, отправьте более короткое сообщение.", $this->message_id)->send();
             return;
         }
 
@@ -48,14 +48,14 @@ class VoiceMessage extends Webhook
         $text   = $openai->transcribeAudio($binary);
 
         if (!$text) {
-            Telegram::message($this->chat_id, "❗ Не удалось распознать голосовое сообщение")->send();
+            Telegram::message($this->chat_id, "❗ Не удалось распознать голосовое сообщение", $this->message_id)->send();
             return;
         }
 
         $operation = $openai->parseOperationFromText($text);
 
         if (!$operation) {
-            Telegram::message($this->chat_id, "❗ Не удалось распознать операцию")->send();
+            Telegram::message($this->chat_id, "❗ Не удалось распознать операцию", $this->message_id)->send();
             return;
         }
 
@@ -93,7 +93,7 @@ class VoiceMessage extends Webhook
         $user = User::where('telegram_id', $this->chat_id)->first();
 
         if (!$user) {
-            Telegram::message($this->chat_id, "❗ Пользователь не найден.")->send();
+            Telegram::message($this->chat_id, "❗ Пользователь не найден.", $this->message_id)->send();
             return;
         }
 

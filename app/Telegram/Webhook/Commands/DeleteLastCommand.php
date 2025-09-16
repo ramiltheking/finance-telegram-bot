@@ -15,7 +15,7 @@ class DeleteLastCommand extends Webhook
 
         $user = User::where('telegram_id', $userId)->first();
         if (!$user) {
-            Telegram::message($userId, '❗ Пользователь не найден')->send();
+            Telegram::message($userId, '❗ Пользователь не найден', $this->message_id)->send();
             return;
         }
 
@@ -25,7 +25,7 @@ class DeleteLastCommand extends Webhook
             ->first();
 
         if (!$lastOperation) {
-            Telegram::message($userId, "❗ У вас нет операций для удаления")->send();
+            Telegram::message($userId, "❗ У вас нет операций для удаления", $this->message_id)->send();
             return;
         }
 
