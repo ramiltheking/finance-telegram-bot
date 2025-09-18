@@ -36,6 +36,20 @@ class UserService
                 }
             }
 
+            $now = now();
+
+            if ($user->subscription_status === 'trial' && $user->trial_ends_at && $user->trial_ends_at->lt($now)) {
+                $user->subscription_status = 'expired';
+                $dirty = true;
+                Log::info("Пробный период истёк у пользователя {$user->telegram_id}");
+            }
+
+            if ($user->subscription_status === 'active' && $user->subscription_ends_at && $user->subscription_ends_at->lt($now)) {
+                $user->subscription_status = 'expired';
+                $dirty = true;
+                Log::info("Подписка истекла у пользователя {$user->telegram_id}");
+            }
+
             if ($dirty) {
                 $user->save();
                 Log::info("Пользователю {$user->telegram_id} обновлены данные в БД: ", $fieldsToCheck);

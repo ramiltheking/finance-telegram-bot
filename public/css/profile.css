@@ -1,0 +1,87 @@
+:root {
+    --primary: #4e73df;
+    --secondary: #1cc88a;
+    --danger: #e74a3b;
+    --light: #f8f9fc;
+    --dark: #343a40;
+    --text: #444;
+}
+
+body {
+    font-family: system-ui, sans-serif;
+    background: #f8f9fc;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 3px solid #4e73df;
+}
+
+.username {
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.btn {
+    display: inline-block;
+    margin: 15px 0;
+    padding: 12px 20px;
+    background: #4e73df;
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.85;
+}
+
+.list-item {
+    background: #fff;
+    padding: 12px 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    font-size: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-item span {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 15px;
+    }
+
+    .list-item {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    h2,
+    h3 {
+        font-size: 18px;
+    }
+}
