@@ -3,35 +3,60 @@
 namespace App\Telegram\Webhook\Commands;
 
 use App\Facades\Telegram;
+use App\Jobs\SendTelegramReminder;
 use App\Models\Reminder;
 use App\Telegram\Webhook\Webhook;
+use Carbon\Carbon;
 
 class RemindCommand extends Webhook
 {
     public function run()
     {
         $userId = $this->chat_id;
-        $text = trim(str_replace('/remind', '', $this->request->input('message.text')));
+        $messageText = trim(str_replace('/remind', '', $this->request->input('message.text')));
 
-        if (!$text) {
-            Telegram::message($userId, '❗ Введите команду в виде /remind 00:00', $this->message_id)->send();
+        if (!$messageText) {
+            Telegram::message($userId, '❗ Введите команду в виде /remind HH:MM [текст напоминания]', $this->message_id)->send();
             return;
         }
 
-        [$hours, $minutes] = array_pad(explode(':', $text), 2, null);
+        $parts = explode(' ', $messageText, 2);
+        $timePart = $parts[0];
+        $customText = $parts[1] ?? null;
+
+        [$hours, $minutes] = array_pad(explode(':', $timePart), 2, null);
 
         if (!is_numeric($hours) || !is_numeric($minutes)) {
-            Telegram::message($userId, '❗ Неверный формат. Используйте HH:MM.', $this->message_id)->send();
+            Telegram::message($userId, '❗ Неверный формат времени. Используйте HH:MM.', $this->message_id)->send();
+            return;
+        }
+
+        $hours = (int) $hours;
+        $minutes = (int) $minutes;
+
+        if ($hours < 0 || $hours > 23 || $minutes < 0 || $minutes > 59) {
+            Telegram::message($userId, '❗ Неверное время. Используйте HH:MM.', $this->message_id)->send();
             return;
         }
 
         $time = sprintf('%02d:%02d:00', $hours, $minutes);
 
-        Reminder::updateOrCreate(
-            ['user_id' => $userId],
-            ['time' => $time, 'text' => '🔔 Напоминание: Заполните расходы/доходы']
-        );
+        $text = '🔔 Напоминание: ' . $customText ?: '🔔 Напоминание: Заполните расходы/доходы';
 
-        Telegram::message($userId, "✅ Напоминание установлено на {$time}")->send();
+        $reminder = Reminder::create([
+            'user_id' => $userId,
+            'time' => $time,
+            'text' => $text
+        ]);
+
+        $sendAt = Carbon::today()->setTime($hours, $minutes, 0);
+        if ($sendAt->lt(now())) {
+            $sendAt->addDay();
+        }
+
+        SendTelegramReminder::dispatch($userId, $text)->delay($sendAt);
+
+        $displayTime = $sendAt->format('H:i');
+        Telegram::message($userId, "✅ Напоминание установлено на {$displayTime}")->send();
     }
 }

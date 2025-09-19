@@ -37,6 +37,13 @@ return [
 
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'dev_chat' => env("TELEGRAM_DEV_CHAT"),
+    ],
+
+    'robokassa' => [
+        'merchant' => env("ROBOKASSA_MERCHANT_LOGIN"),
+        'password1' => env("ROBOKASSA_PASSWORD1"),
+        'password2' => env("ROBOKASSA_PASSWORD2"),
     ],
 
 ];
