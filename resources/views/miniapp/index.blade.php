@@ -8,6 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="/css/index.css">
 </head>
 
@@ -38,12 +39,33 @@
         <div class="card">
             <h3>📂 Экспорт</h3>
             <div class="export-links">
-                <a href="/miniapp/export/excel">Excel</a>
+                <a href="/miniapp/export/xlsx">Excel</a>
                 <a href="/miniapp/export/pdf">PDF</a>
-                <a href="/miniapp/export/word">Word</a>
+                <a href="/miniapp/export/docx">Word</a>
             </div>
         </div>
     </main>
+
+    @if (session('success'))
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: "{{ session('success') }}",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'app-toast',
+                        title: 'app-toast-title',
+                        timerProgressBar: 'app-toast-progress'
+                    }
+                });
+            });
+        </script>
+    @endif
 
     <script src="/js/index.js"></script>
 </body>

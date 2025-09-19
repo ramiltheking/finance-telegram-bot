@@ -127,14 +127,14 @@ if (username) {
                 data.operations.map(op => {
                     const isIncome = op.type === 'income';
                     return `
-                                <div class="operation">
-                                <div class="op-icon ${isIncome ? 'op-income' : 'op-expense'}">
-                                    ${isIncome ? '+' : '−'}
-                                </div>
-                                <div class="op-text">${op.category}</div>
-                                <div class="op-amount">${op.amount} ${op.currency}</div>
-                                </div>
-                            `;
+                        <div class="operation">
+                        <div class="op-icon ${isIncome ? 'op-income' : 'op-expense'}">
+                            ${isIncome ? '+' : '−'}
+                        </div>
+                        <div class="op-text">${op.category}</div>
+                        <div class="op-amount">${op.amount} ${op.currency}</div>
+                        </div>
+                    `;
                 }).join('');
         }
     } catch (error) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Telegram;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\UserService;
@@ -151,8 +152,6 @@ class MiniAppController extends Controller
             'subscription_ends_at' => optional($dbUser)->subscription_ends_at->format('d.m.Y'),
         ]);
     }
-
-    public function export(Request $request, $format) {}
 
     public function auth(Request $request)
     {

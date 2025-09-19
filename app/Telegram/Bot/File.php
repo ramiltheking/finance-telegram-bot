@@ -68,7 +68,7 @@ class File extends Bot
     public function send()
     {
         if ($this->file) {
-            return Http::attach($this->type, $this->file, $this->filename)->post(
+            return Http::attach($this->type, file_get_contents($this->file), $this->filename)->post(
                 "https://api.telegram.org/bot" . env("TELEGRAM_BOT_TOKEN") . "/" . $this->method,
                 $this->data
             )->json();
