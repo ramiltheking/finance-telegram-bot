@@ -33,10 +33,10 @@ fetch('/miniapp/profile/data', {
                 html = `<h3>💳 Подписка</h3><p>Активна до <b>${data.subscription_ends_at}</b></p>`;
                 break;
             case 'expired':
-                html = `<h3>❌ Подписка закончилась</h3><a href="/miniapp/tarifs" class="btn">Оплатить</a>`;
+                html = `<h3>❌ Подписка закончилась</h3><a href="/miniapp/tarifs" class="pay-btn">Оплатить</a>`;
                 break;
             default:
-                html = `<h3>❌ Подписка отсутствует</h3><a href="/miniapp/tarifs" class="btn">Оформить</a>`;
+                html = `<h3>❌ Подписка отсутствует</h3><a href="/miniapp/tarifs" class="pay-btn">Оформить</a>`;
         }
         document.getElementById('subscription').innerHTML = html;
 

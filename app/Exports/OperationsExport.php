@@ -35,7 +35,9 @@ class OperationsExport implements FromCollection, WithHeadings, WithMapping, Sho
         return [
             $operation->occurred_at->format('d.m.Y H:i'),
             $operation->category_name,
-            number_format($operation->amount, 2)
+            $operation->type === "income"
+                ? "+" . number_format($operation->amount, 2, '.', '')
+                : "-" . number_format($operation->amount, 2, '.', '')
         ];
     }
 

@@ -132,16 +132,14 @@ class MiniAppController extends Controller
 
         $payments = Payment::where('user_id', $telegramId)->latest()->get();
 
-        if ($payments->isEmpty()) {
-            return response()->json([
-                'emptyPayments'   => true,
-                'messagePayments'   => 'Платежи отсутствуют',
-                'payments'      => [],
-                'status' => $dbUser->subscription_status ?? 'none',
-                'trial_ends_at' => optional($dbUser)->trial_ends_at->format('d.m.Y'),
-                'subscription_ends_at' => optional($dbUser)->subscription_ends_at->format('d.m.Y'),
-            ]);
-        }
+        return response()->json([
+            'emptyPayments'   => $payments->isEmpty(),
+            'messagePayments' => $payments->isEmpty() ? 'Платежи отсутствуют' : null,
+            'payments'        => $payments->take(10),
+            'status'          => $dbUser->subscription_status ?? 'none',
+            'trial_ends_at'   => optional($dbUser->trial_ends_at)->format('d.m.Y'),
+            'subscription_ends_at' => optional($dbUser->subscription_ends_at)->format('d.m.Y'),
+        ]);
 
         return response()->json([
             'emptyPayments'   => $payments->isEmpty(),

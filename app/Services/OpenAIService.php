@@ -54,7 +54,14 @@ class OpenAIService
             2) Do not invent new categories.
             3) "type" must be "income" if the category is from INCOME list, or "expense" if from EXPENSE list.
             4) "occurred_at" must be today’s date if not explicitly mentioned.
-            5) If the message is not a financial transaction, then return null
+            5) Determine the currency from the text or from the context:
+            - If text contains "доллар", "бакс", "usd", "$" → "USD"
+            - If text contains "рубл", "₽", "rub" → "RUB"
+            - If text contains "евро", "eur", "€" → "EUR"
+            - If text contains "тенге", "₸", "kzt" → "KZT"
+            - Otherwise, if not specified → set "currency": "KZT".
+            6) If the message is not a financial transaction, return null.
+            7) "amount" must always be a valid number (float).
 
             Available categories:
 
