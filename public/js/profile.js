@@ -50,3 +50,57 @@ fetch('/miniapp/profile/data', {
             `).join('');
         }
     });
+
+document.getElementById("deleteUserBtn").addEventListener("click", function () {
+    Swal.fire({
+        title: "Удалить данные?",
+        text: "⚠️ Вы уверены, что хотите удалить все данные? Это действие необратимо!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Да, удалить",
+        cancelButtonText: "Отмена"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch("/miniapp/profile/delete", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": TokenCSRF
+                },
+                body: JSON.stringify({})
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: "✅ Успех!",
+                            text: "Все данные удалены",
+                            icon: "success",
+                            confirmButtonText: "Ок"
+                        }).then(() => {
+                            location.href = "/miniapp";
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "❌ Ошибка",
+                            text: data.message || "Не удалось удалить данные",
+                            icon: "error",
+                            confirmButtonText: "Ок"
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        title: "⚠️ Ошибка",
+                        text: "Произошла ошибка при удалении данных",
+                        icon: "error",
+                        confirmButtonText: "Ок"
+                    });
+                });
+        }
+    });
+});
+

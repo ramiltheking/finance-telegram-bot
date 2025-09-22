@@ -28,7 +28,7 @@ class ExportController extends Controller
             ->get();
 
         if ($operations->isEmpty()) {
-            return response()->json(['error' => 'Нет операций для экспорта'], 400);
+            return redirect()->route('miniapp.index')->with('fail', 'Нет операций для экспорта');
         }
 
         $categoryMapById = Category::pluck('name_ru', 'id')->toArray();

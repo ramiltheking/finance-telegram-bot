@@ -24,8 +24,8 @@ class VoiceMessage extends Webhook
 
         $voiceDuration = $voice['duration'];
 
-        if ($voiceDuration > 10) {
-            Telegram::message($this->chat_id, "❗ Длительность аудиосообщения превышает 10 секунд. Пожалуйста, отправьте более короткое сообщение.", $this->message_id)->send();
+        if ($voiceDuration > 20) {
+            Telegram::message($this->chat_id, "❗ Длительность аудиосообщения превышает 20 секунд. Пожалуйста, отправьте более короткое сообщение.", $this->message_id)->send();
             return;
         }
 

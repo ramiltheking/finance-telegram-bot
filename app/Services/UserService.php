@@ -58,4 +58,9 @@ class UserService
 
         return $user;
     }
+
+    public static function hasAccess(User $user): bool
+    {
+        return in_array($user->subscription_status, ['trial', 'active']);
+    }
 }

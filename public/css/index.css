@@ -233,6 +233,7 @@ canvas {
 }
 
 .message {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -249,6 +250,10 @@ canvas {
     font-size: 14px;
     backdrop-filter: blur(6px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.warning {
+    background: #ff9c47;
 }
 
 .app-toast-title {

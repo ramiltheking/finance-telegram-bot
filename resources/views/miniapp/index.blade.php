@@ -65,6 +65,25 @@
                 });
             });
         </script>
+    @elseif (session('fail'))
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                Swal.fire({
+                    toast: true,
+                    position: 'bottom-end',
+                    icon: 'warning',
+                    title: "{{ session('fail') }}",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'app-toast warning',
+                        title: 'app-toast-title',
+                        timerProgressBar: 'app-toast-progress'
+                    }
+                });
+            });
+        </script>
     @endif
 
     <script src="/js/index.js"></script>

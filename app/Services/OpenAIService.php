@@ -81,7 +81,8 @@ class OpenAIService
                     "Debt Return",
                     "Prizes",
                     "Currency Exchange Profit",
-                    "Digital Assets Sale"
+                    "Digital Assets Sale",
+                    "Loans Received",
                 ],
                 "EXPENSE": [
                     "Housing",
@@ -125,7 +126,8 @@ class OpenAIService
                     "Transfers",
                     "Investments Purchase",
                     "Insurance",
-                    "Currency Exchange"
+                    "Currency Exchange",
+                    "Loans Given",
                 ]
             }
         PROMPT;

@@ -61,7 +61,7 @@ if (username) {
                 break;
             case 'active':
                 subscription =
-                    `<h3>💰 Подписка</h3> Активна до: <strong>${sub.subscription_ends_at}</strong>`;
+                    `<h3>💳 Подписка</h3> Активна до: <strong>${sub.subscription_ends_at}</strong>`;
                 break;
             case 'expired':
                 subscription =
@@ -80,7 +80,7 @@ if (username) {
         const ctx = document.getElementById('chart').getContext('2d');
         const labels = Object.keys(data.categories);
         const values = Object.values(data.categories);
-        const colors = ['#f66', '#6f6', '#66f', '#fc6', '#6cf'];
+        const colors = ['#f66', '#6f6', '#66f', '#fc6','#6cf', '#c6f', '#ff6','#6ff', '#f6c', '#9f6'];
 
         const chart = new Chart(ctx, {
             type: 'pie',
@@ -105,6 +105,7 @@ if (username) {
                 `<p class="message">${data.messageOperations}</p>`;
             document.getElementById('legend').innerHTML =
                 `<p class="message">${data.messageOperations}</p>`;
+            document.getElementById('chart').remove();
         } else {
             const legend = document.getElementById('legend');
             labels.forEach((label, i) => {

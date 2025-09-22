@@ -2,7 +2,9 @@
 
 namespace App\Telegram\Webhook;
 
+use App\Facades\Telegram;
 use App\Services\UserService;
+use App\Telegram\Helpers\InlineButton;
 use App\Telegram\Webhook\Commands\BalanceCommand;
 use App\Telegram\Webhook\Commands\DeleteCommand;
 use App\Telegram\Webhook\Commands\DeleteLastCommand;
@@ -34,10 +36,14 @@ class Realization
     {
         if ($request->input('message.from'))
         {
-            UserService::registerOrUpdate($request->input('message.from'));
+            $user = UserService::registerOrUpdate($request->input('message.from'));
         } elseif ($request->input('callback_query.from'))
         {
-            UserService::registerOrUpdate($request->input('callback_query.from'));
+            $user = UserService::registerOrUpdate($request->input('callback_query.from'));
+        }
+
+        if (!UserService::hasAccess($user)) {
+            return '\App\Telegram\Webhook\Actions\EndTarif';
         }
 
         if (isset($request->input('message')['entities'][0]['type']))

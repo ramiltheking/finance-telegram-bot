@@ -25,6 +25,7 @@ class CategoriesSeeder extends Seeder
             ['type' => 'income', 'name_en' => 'Prizes', 'name_ru' => 'Призы, выигрыши', 'emoji' => '🏆'],
             ['type' => 'income', 'name_en' => 'Currency Exchange Profit', 'name_ru' => 'Обмен валюты (прибыль)', 'emoji' => '💱'],
             ['type' => 'income', 'name_en' => 'Digital Assets Sale', 'name_ru' => 'Продажа цифровых активов', 'emoji' => '💎'],
+            ['type' => 'income', 'name_en' => 'Loans Received', 'name_ru' => 'Вернули долг', 'emoji' => '🔁'],
 
             ['type' => 'expense', 'name_en' => 'Housing', 'name_ru' => 'Дом и быт', 'emoji' => '🏠'],
             ['type' => 'expense', 'name_en' => 'Rent / Mortgage', 'name_ru' => 'Аренда жилья / ипотека', 'emoji' => '🏡'],
@@ -76,6 +77,7 @@ class CategoriesSeeder extends Seeder
             ['type' => 'expense', 'name_en' => 'Investments Purchase', 'name_ru' => 'Инвестиции (покупка активов)', 'emoji' => '📉'],
             ['type' => 'expense', 'name_en' => 'Insurance', 'name_ru' => 'Страховка', 'emoji' => '🔐'],
             ['type' => 'expense', 'name_en' => 'Currency Exchange', 'name_ru' => 'Обмен валют', 'emoji' => '💱'],
+            ['type' => 'expense', 'name_en' => 'Loans Given', 'name_ru' => 'Занял в долг', 'emoji' => '🔁'],
         ];
 
         DB::table('categories')->insert($categories);
