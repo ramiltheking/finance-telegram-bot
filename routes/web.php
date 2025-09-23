@@ -10,6 +10,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TarifsController;
 use App\Http\Controllers\RobokassaController;
+use App\Http\Controllers\SettingsController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -23,6 +24,9 @@ Route::post('/miniapp/data', [MiniAppController::class, 'data']);
 Route::view('/miniapp/profile', 'miniapp.profile')->middleware('auth');
 Route::post('/miniapp/profile/data', [ProfileController::class, 'profileData'])->middleware('auth');
 Route::post('/miniapp/profile/delete', [ProfileController::class, 'delete'])->name('profile.delete')->middleware('auth');
+
+Route::view('/miniapp/settings', 'miniapp.settings')->middleware('auth');
+Route::view('/miniapp/settings/data', [SettingsController::class, 'settingsData'])->middleware('auth');
 
 Route::get('/miniapp/tarifs', [TarifsController::class, 'index'])->name('tarifs')->middleware('auth');
 

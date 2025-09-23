@@ -41,18 +41,19 @@ class OpenAIService
             You are accountant parser. Parse user's phrase into JSON:
 
             {
-            "type": "expense" | "income",
-            "title": string,
-            "amount": number,
-            "currency": string,
-            "category": string,
-            "occurred_at": "YYYY-MM-DD"
+                "type": "expense" | "income",
+                "title": string,
+                "amount": number,
+                "currency": string,
+                "category": string,
+                "occurred_at": "YYYY-MM-DD"
             }
 
             Rules:
-            1) For "category", strictly use one of the predefined categories below. If none match, return "Other".
+            1) For "category", you must always return only a **subcategory** (leaf-node) from the list (those inside groups like "Salary", "Rent / Mortgage", "Groceries", etc.). Never return parent groups (e.g. "Food & Leisure", "Housing & Utilities"). If none match, return "Other".
             2) Do not invent new categories.
             3) "type" must be "income" if the category is from INCOME list, or "expense" if from EXPENSE list.
+            4) "title" return in Russian language.
             4) "occurred_at" must be today’s date if not explicitly mentioned.
             5) Determine the currency from the text or from the context:
             - If text contains "доллар", "бакс", "usd", "$" → "USD"
@@ -65,71 +66,7 @@ class OpenAIService
 
             Available categories:
 
-            {
-                "INCOME": [
-                    "Salary",
-                    "Freelance",
-                    "Investments",
-                    "Rent",
-                    "Sales",
-                    "Side Jobs",
-                    "Gifts",
-                    "Social Payments",
-                    "Cashback",
-                    "Online Projects",
-                    "Royalties",
-                    "Debt Return",
-                    "Prizes",
-                    "Currency Exchange Profit",
-                    "Digital Assets Sale",
-                    "Loans Received",
-                ],
-                "EXPENSE": [
-                    "Housing",
-                    "Rent / Mortgage",
-                    "Utilities",
-                    "Internet & Mobile",
-                    "Household Goods",
-                    "Furniture & Appliances",
-                    "Clothes",
-                    "Beauty & Care",
-                    "Hairdresser",
-                    "Gifts to Others",
-                    "Pets",
-                    "Groceries",
-                    "Restaurants",
-                    "Coffee & Snacks",
-                    "Food Delivery",
-                    "Public Transport",
-                    "Taxi",
-                    "Fuel",
-                    "Car Maintenance",
-                    "Travel Tickets",
-                    "Cinema & Theatre",
-                    "Games",
-                    "Music & Concerts",
-                    "Sport & Fitness",
-                    "Travel",
-                    "Bars & Clubs",
-                    "Books",
-                    "Courses",
-                    "Tutors",
-                    "Doctors",
-                    "Medicine",
-                    "Dentist",
-                    "Fitness & Yoga",
-                    "Smartphones & Gadgets",
-                    "Computers",
-                    "Subscriptions",
-                    "Online Services",
-                    "Credits & Debts",
-                    "Transfers",
-                    "Investments Purchase",
-                    "Insurance",
-                    "Currency Exchange",
-                    "Loans Given",
-                ]
-            }
+            { "INCOME": { "Work & Business": [ "Salary", "Freelance", "Side Jobs", "Business Profit", "Selling Services" ], "Investments & Capital": [ "Investments", "Dividends", "Currency Exchange Profit", "Digital Assets Sale", "Royalties", "Intellectual Property Sale" ], "Real Estate & Rent": [ "Rent", "Rental Equipment/Transport" ], "Social & Personal": [ "Social Payments", "Pension", "Scholarship / Grant", "Gifts", "Prizes", "Inheritance" ], "Refunds & Donations": [ "Debt Return", "Refunds & Compensations", "Crowdfunding / Donations Received", "Affiliate & Advertising", "Online Projects", "Cashback" ], "Loans": [ "Loans Received" ] }, "EXPENSE": { "Housing & Utilities": [ "Housing", "Rent / Mortgage", "Utilities", "Internet & Mobile", "Household Goods", "Furniture & Appliances", "Home Renovation & Repairs", "Home Security" ], "Personal": [ "Clothes", "Beauty & Care", "Hairdresser", "Smartphones & Gadgets", "Computers", "Hobbies & Collections" ], "Family & Children": [ "Children & Education", "Tutors", "Courses", "Gifts to Others", "Pets" ], "Food & Leisure": [ "Groceries", "Restaurants", "Coffee & Snacks", "Food Delivery", "Bars & Clubs", "Cinema & Theatre", "Music & Concerts", "Games", "Travel", "Travel Tickets", "Books", "Streaming & Entertainment Subscriptions" ], "Transport": [ "Public Transport", "Taxi", "Fuel", "Car Maintenance", "Parking & Tolls" ], "Health": [ "Doctors", "Dentist", "Medicine", "Fitness & Yoga", "Sport & Fitness", "Health Insurance" ], "Finance & Obligations": [ "Credits & Debts", "Transfers", "Investments Purchase", "Insurance", "Currency Exchange", "Loans Given", "Taxes", "Bank Fees & Commissions", "Legal Services & Fines" ], "Other": [ "Subscriptions", "Online Services", "Business Expenses", "Charity & Donations", "Alcohol & Tobacco", "Gambling & Lottery" ] } }
         PROMPT;
 
         try {

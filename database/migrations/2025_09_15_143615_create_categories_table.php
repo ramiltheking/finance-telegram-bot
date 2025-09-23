@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['income', 'expense']);
+            $table->foreignId('parent_id')->nullable()->constrained('categories')->nullOnDelete();
+            $table->enum('type', ['INCOME', 'EXPENSE']);
             $table->string('name_en');
             $table->string('name_ru');
-            $table->string('emoji', 10)->nullable();
+            $table->string('slug')->unique();
             $table->timestamps();
         });
     }
