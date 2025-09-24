@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\UserSetting;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
 class UserService
@@ -54,6 +56,21 @@ class UserService
                 $user->save();
                 Log::info("Пользователю {$user->telegram_id} обновлены данные в БД: ", $fieldsToCheck);
             }
+        }
+
+        UserSetting::firstOrCreate([
+            'user_id' => $user->telegram_id,
+        ], [
+            'currency' => 'KZT',
+            'language' => 'ru',
+            'timezone' => 'Asia/Almaty',
+            'reminders_enabled' => true,
+        ]);
+
+        if ($user && $user->settings) {
+            App::setLocale($user->settings->language ?? 'ru');
+        } else {
+            App::setLocale('ru');
         }
 
         return $user;

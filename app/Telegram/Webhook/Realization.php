@@ -14,6 +14,7 @@ use App\Telegram\Webhook\Commands\ReportCommand;
 use App\Telegram\Webhook\Commands\FullReportCommand;
 use App\Telegram\Webhook\Commands\RemindCommand;
 use App\Telegram\Webhook\Commands\StartCommand;
+use App\Telegram\Webhook\Other\Other;
 use App\Telegram\Webhook\Text\Text;
 use App\Telegram\Webhook\Voice\VoiceMessage;
 use Illuminate\Http\Request;
@@ -40,9 +41,13 @@ class Realization
         } elseif ($request->input('callback_query.from'))
         {
             $user = UserService::registerOrUpdate($request->input('callback_query.from'));
+        } elseif ($request->input('edited_message.from'))
+        {
+            $user = UserService::registerOrUpdate($request->input('edited_message.from'));
         }
 
-        if (!UserService::hasAccess($user)) {
+        if (!UserService::hasAccess($user))
+        {
             return '\App\Telegram\Webhook\Actions\EndTarif';
         }
 
@@ -69,6 +74,11 @@ class Realization
         elseif($request->input('message'))
         {
             return Text::class;
+        }
+
+        else
+        {
+            return Other::class;
         }
 
         return false;

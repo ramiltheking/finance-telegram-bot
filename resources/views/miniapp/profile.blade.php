@@ -23,7 +23,7 @@
         <div class="header-title">
             <strong>Профиль</strong>
         </div>
-        <a href="#" class="settings-btn">
+        <a href="{{ route('miniapp.settings') }}" class="settings-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-gear"
                 viewBox="0 0 16 16">
                 <path

@@ -1,0 +1,200 @@
+:root {
+    --primary: #4e73df;
+    --secondary: #1cc88a;
+    --danger: #e74a3b;
+    --light: #f8f9fc;
+    --dark: #343a40;
+    --text: #444;
+    --border-radius: 12px;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--light);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+}
+
+.header {
+    max-width: 1160px;
+    width: 95%;
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.header-title {
+    font-size: 24px;
+}
+
+.prev-btn {
+    position: absolute;
+    left: 0px;
+    top: 5px;
+    padding: 10px 20px;
+    color: var(--primary);
+    transition: all 0.3s ease;
+}
+
+.prev-btn:hover {
+    transform: translate(-5px, 0);
+    opacity: 0.8;
+}
+
+.main {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.card {
+    background: #fff;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+}
+
+.card h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--primary);
+}
+
+.buttons__group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.buttons__group button {
+    flex: 1;
+    min-width: 80px;
+    font-weight: 600;
+    background: var(--light);
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--primary);
+    transition: all 0.2s ease;
+}
+
+.buttons__group button:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+.buttons__group button.active {
+    background: var(--primary);
+    color: #fff;
+    font-weight: bold;
+}
+
+#userTimezone {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--dark);
+}
+
+#detectTimezone {
+    background: var(--secondary);
+    border: none;
+    font-weight: 600;
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+#detectTimezone:hover {
+    background: #17a673;
+}
+
+.toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toggle-input {
+    display: none;
+}
+
+.toggle-label {
+    position: relative;
+    display: inline-block;
+    min-width: 48px;
+    height: 26px;
+    background: #ccc;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.toggle-label::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.toggle-input:checked + .toggle-label {
+    background: var(--primary);
+}
+
+.toggle-input:checked + .toggle-label::after {
+    transform: translateX(22px);
+}
+
+.toggle-text {
+    font-size: 15px;
+    color: var(--dark);
+}
+
+.time-settings {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 14px;
+    margin-left: 58px;
+}
+
+.time-settings label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 500;
+    color: #333;
+}
+
+.time-settings select {
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.hidden {
+    display: none;
+}

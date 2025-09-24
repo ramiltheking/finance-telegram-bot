@@ -37,4 +37,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Reminder::class);
     }
+
+    public function settings()
+    {
+        return $this->hasOne(UserSetting::class, 'user_id', 'telegram_id');
+    }
 }

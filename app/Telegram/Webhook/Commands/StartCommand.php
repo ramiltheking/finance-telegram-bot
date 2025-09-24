@@ -17,6 +17,6 @@ class StartCommand extends Webhook
         InlineButton::add('Информация о работе бота', 'WorkInfo', [], 3);
         InlineButton::add('Доступные тарифы', 'Tarifs', [], 4);
         InlineButton::web_app('Финансовая статистика', $miniapp_url, 5);
-        return Telegram::inlineButtons($this->chat_id, "👋 Добро пожаловать, {$first_name}!", InlineButton::$buttons)->send();
+        return Telegram::inlineButtons($this->chat_id, __('messages.welcome', ['name' => $first_name]), InlineButton::$buttons)->send();
     }
 }
