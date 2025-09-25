@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>Профиль</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="/css/profile.css">
@@ -21,7 +20,7 @@
             </svg>
         </a>
         <div class="header-title">
-            <strong>Профиль</strong>
+            <strong>{{ __('profile.title') }}</strong>
         </div>
         <a href="{{ route('miniapp.settings') }}" class="settings-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-gear"
@@ -42,21 +41,22 @@
             <div id="telegramId"></div>
         </div>
 
-        <div class="card" id="subscription">
-
-        </div>
+        <div class="card" id="subscription"></div>
 
         <div class="card">
-            <h3>💳 История оплат</h3>
+            <h3>{{ __('profile.payments_title') }}</h3>
             <div class="list payments" id="payments"></div>
         </div>
 
         <div class="card">
-            <h3>⚙️ Управление аккаунтом</h3>
-            <button id="deleteUserBtn" class="danger-btn">Удалить пользовательские данные</button>
+            <h3>{{ __('profile.account_title') }}</h3>
+            <button id="deleteUserBtn" class="danger-btn">{{ __('profile.delete_btn') }}</button>
         </div>
     </main>
 
+    <script>
+        window.i18n = @json(__('profile'));
+    </script>
     <script src="/js/profile.js"></script>
 </body>
 

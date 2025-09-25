@@ -2,6 +2,7 @@
 
 use App\Facades\Telegram;
 use App\Http\Middleware\SetUserLocale;
+use App\Http\Middleware\TelegramAuth;
 use App\Jobs\SendDailyReminder;
 use Illuminate\Foundation\Application;
 use Illuminate\Console\Scheduling\Schedule;
@@ -17,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SetUserLocale::class);
+        $middleware->append(TelegramAuth::class);
+        $middleware->validateCsrfTokens(except: [
+            'miniapp/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->reportable(function (Throwable $e) {

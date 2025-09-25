@@ -1,4 +1,3 @@
-const TokenCSRF = document.querySelector('meta[name="csrf-token"]').content;
 const tg = window.Telegram.WebApp;
 tg.expand();
 
@@ -16,7 +15,6 @@ fetch('/miniapp/profile/data', {
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'X-CSRF-TOKEN': TokenCSRF
     },
     body: JSON.stringify({
         initData: tg.initData
@@ -27,16 +25,16 @@ fetch('/miniapp/profile/data', {
         let html = '';
         switch (data.status) {
             case 'trial':
-                html = `<h3>⏳ Пробный период</h3><p>Активен до <b>${data.trial_ends_at}</b></p>`;
+                html = `<h3>${window.i18n.trial}</h3><p>${window.i18n.trial_until.replace(':date', data.trial_ends_at)}</p>`;
                 break;
             case 'active':
-                html = `<h3>💳 Подписка</h3><p>Активна до <b>${data.subscription_ends_at}</b></p>`;
+                html = `<h3>${window.i18n.active}</h3><p>${window.i18n.active_until.replace(':date', data.subscription_ends_at)}</p>`;
                 break;
             case 'expired':
-                html = `<h3>❌ Подписка закончилась</h3><a href="/miniapp/tarifs" class="pay-btn">Оплатить</a>`;
+                html = `<h3>${window.i18n.expired}</h3><a href="/miniapp/tarifs" class="pay-btn">${window.i18n.pay_again}</a>`;
                 break;
             default:
-                html = `<h3>❌ Подписка отсутствует</h3><a href="/miniapp/tarifs" class="pay-btn">Оформить</a>`;
+                html = `<h3>${window.i18n.no_subscription}</h3><a href="/miniapp/tarifs" class="pay-btn">${window.i18n.pay}</a>`;
         }
         document.getElementById('subscription').innerHTML = html;
 
@@ -53,14 +51,14 @@ fetch('/miniapp/profile/data', {
 
 document.getElementById("deleteUserBtn").addEventListener("click", function () {
     Swal.fire({
-        title: "Удалить данные?",
-        text: "⚠️ Вы уверены, что хотите удалить все данные? Это действие необратимо!",
+        title: window.i18n.delete_confirm,
+        text: window.i18n.delete_text,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
         cancelButtonColor: "#3085d6",
-        confirmButtonText: "Да, удалить",
-        cancelButtonText: "Отмена"
+        confirmButtonText: window.i18n.delete_yes,
+        cancelButtonText: window.i18n.delete_cancel
     }).then((result) => {
         if (result.isConfirmed) {
             fetch("/miniapp/profile/delete", {
@@ -68,40 +66,40 @@ document.getElementById("deleteUserBtn").addEventListener("click", function () {
                 headers: {
                     "Content-Type": "application/json",
                     'Accept': 'application/json',
-                    "X-CSRF-TOKEN": TokenCSRF
                 },
-                body: JSON.stringify({})
+                body: JSON.stringify({
+                    initData: tg.initData
+                })
             })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
                         Swal.fire({
-                            title: "✅ Успех!",
-                            text: "Все данные удалены",
+                            title: window.i18n.delete_success,
+                            text: window.i18n.delete_success_text,
                             icon: "success",
-                            confirmButtonText: "Ок"
+                            confirmButtonText: window.i18n.ok
                         }).then(() => {
                             location.href = "/miniapp";
                         });
                     } else {
                         Swal.fire({
-                            title: "❌ Ошибка",
-                            text: data.message || "Не удалось удалить данные",
+                            title: window.i18n.delete_error,
+                            text: data.message || window.i18n.delete_error_text,
                             icon: "error",
-                            confirmButtonText: "Ок"
+                            confirmButtonText: window.i18n.ok
                         });
                     }
                 })
                 .catch(err => {
                     console.error(err);
                     Swal.fire({
-                        title: "⚠️ Ошибка",
-                        text: "Произошла ошибка при удалении данных",
+                        title: window.i18n.delete_unknown,
+                        text: window.i18n.delete_unknown_text,
                         icon: "error",
-                        confirmButtonText: "Ок"
+                        confirmButtonText: window.i18n.ok
                     });
                 });
         }
     });
 });
-

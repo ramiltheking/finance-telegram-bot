@@ -5,11 +5,10 @@
     <meta charset="UTF-8">
     <title>Finance MiniApp</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 
 <body>
@@ -18,7 +17,7 @@
 
         </div>
 
-        <a href="/miniapp/profile" class="profile" id="userProfile">
+        <a href="{{ route('miniapp.profile') }}" class="profile" id="userProfile">
             <img src="" alt="avatar" id="userPhoto" class="avatar">
             <span id="username" class="username"></span>
         </a>
@@ -26,18 +25,18 @@
 
     <main class="main">
         <div class="card">
-            <h3>📊 Статистика</h3>
+            <h3>{{ __('dashboard.stats') }}</h3>
             <canvas id="chart"></canvas>
             <div id="legend" class="legend"></div>
         </div>
 
         <div class="card">
-            <h3>📋 Последние операции</h3>
+            <h3>{{ __('dashboard.operations') }}</h3>
             <div class="list operations" id="operations"></div>
         </div>
 
         <div class="card">
-            <h3>📂 Экспорт</h3>
+            <h3>{{ __('dashboard.export') }}</h3>
             <div class="export-links">
                 <a href="/miniapp/export/xlsx">Excel</a>
                 <a href="/miniapp/export/pdf">PDF</a>
@@ -86,7 +85,10 @@
         </script>
     @endif
 
-    <script src="/js/index.js"></script>
+    <script>
+        window.i18n = @json(__('dashboard'));
+    </script>
+    <script src="/js/dashboard.js"></script>
 </body>
 
 </html>

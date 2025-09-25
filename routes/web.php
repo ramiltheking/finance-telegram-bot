@@ -12,35 +12,34 @@ use App\Http\Controllers\TarifsController;
 use App\Http\Controllers\RobokassaController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Middleware\SetUserLocale;
+use App\Http\Middleware\TelegramAuth;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::post('/miniapp/auth', [MiniAppController::class, 'auth'])->name('login');
+Route::post('/miniapp/auth', [MiniAppController::class, 'auth']);
 
-Route::get('/miniapp', [MiniAppController::class, 'index'])->name('miniapp.index');
-Route::post('/miniapp/data', [MiniAppController::class, 'data']);
+Route::prefix('miniapp')->middleware([TelegramAuth::class, SetUserLocale::class])->group(function () {
+    Route::get('/', [MiniAppController::class, 'dashboard'])->name('miniapp.index');
+    Route::post('/dashboard/data', [MiniAppController::class, 'dashboardData']);
 
-Route::middleware('auth')->group(function () {
-    Route::view('/miniapp/profile', 'miniapp.profile')->name('miniapp.profile');
-    Route::post('/miniapp/profile/data', [ProfileController::class, 'profileData']);
-    Route::post('/miniapp/profile/delete', [ProfileController::class, 'delete'])->name('profile.delete');
+    Route::view('/profile', 'miniapp.profile')->name('miniapp.profile');
+    Route::post('/profile/data', [ProfileController::class, 'profileData']);
+    Route::post('/detect-timezone', [SettingsController::class, 'detectTimezone']);
+    Route::post('/profile/delete', [ProfileController::class, 'delete'])->name('profile.delete');
+
+    Route::get('/settings', [SettingsController::class, 'index'])->name('miniapp.settings');
+    Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
+
+    Route::get('/tarifs', [TarifsController::class, 'index'])->name('tarifs');
+
+    Route::get('/export/{format}', [ExportController::class, 'export'])->name('miniapp.export');
 });
-
-Route::middleware('auth')->group(function () {
-    Route::get('/miniapp/settings', [SettingsController::class, 'index'])->name('miniapp.settings')->middleware(SetUserLocale::class);
-    Route::post('/miniapp/settings/update', [SettingsController::class, 'update'])->name('settings.update');
-});
-Route::post('/detect-timezone', [SettingsController::class, 'detectTimezone']);
-
-Route::get('/miniapp/tarifs', [TarifsController::class, 'index'])->name('tarifs')->middleware('auth');
 
 Route::post('/robokassa/result', [RobokassaController::class, 'result'])->name('robokassa.result');
 Route::get('/robokassa/success', [RobokassaController::class, 'success'])->name('robokassa.success');
 Route::get('/robokassa/fail', [RobokassaController::class, 'fail'])->name('robokassa.fail');
-
-Route::get('/miniapp/export/{format}', [ExportController::class, 'export'])->name('miniapp.export')->middleware('auth');
 
 Route::get('/webhook-data', function () {
     dd(Cache::get('webhook-data'));

@@ -1,4 +1,3 @@
-const TokenCSRF = document.querySelector('meta[name="csrf-token"]').content;
 const tg = window.Telegram.WebApp;
 tg.expand();
 
@@ -16,33 +15,11 @@ if (username) {
 
 (async () => {
     try {
-        const authRes = await fetch('/miniapp/auth', {
+        const dataRes = await fetch('/miniapp/dashboard/data', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'X-CSRF-TOKEN': TokenCSRF
-            },
-            body: JSON.stringify({
-                initData: tg.initData
-            })
-        });
-
-        const authData = await authRes.json();
-
-        if (!authData.success) {
-            console.error('Ошибка авторизации', authData);
-            return;
-        }
-
-        console.log('Авторизация успешна');
-
-        const dataRes = await fetch('/miniapp/data', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': TokenCSRF
             },
             body: JSON.stringify({
                 initData: tg.initData
@@ -56,23 +33,16 @@ if (username) {
         let subscription = '';
         switch (sub.status) {
             case 'trial':
-                subscription =
-                    `<h3>⏳ Пробный период</h3> Активен до: <strong>${sub.trial_ends_at}</strong>`;
+                subscription = `<h3>${window.i18n.trial}</h3><p>${window.i18n.trial_until.replace(':date', sub.trial_ends_at)}</p>`;
                 break;
             case 'active':
-                subscription =
-                    `<h3>💳 Подписка</h3> Активна до: <strong>${sub.subscription_ends_at}</strong>`;
+                subscription = `<h3>${window.i18n.active}</h3><p>${window.i18n.active_until.replace(':date', sub.subscription_ends_at)}</p>`;
                 break;
             case 'expired':
-                subscription =
-                    `<h3>❌ Подписка неактивна</h3><a href="/miniapp/tarifs?initData=${encodeURIComponent(tg.initData)}" class="pay-btn">Оплатить тариф</a>`;
-                break;
-            case 'cancelled':
-                subscription = `<h3>Подписка отменена</h3>`;
+                subscription = `<h3>${window.i18n.expired}</h3><a href="/miniapp/tarifs" class="pay-btn">${window.i18n.pay_again}</a>`;
                 break;
             default:
-                subscription =
-                    `<h3>❌ Нет подписки</h3> <br><a href="/miniapp/tarifs?initData=${encodeURIComponent(tg.initData)}" class="pay-btn">Оплатить тариф</a>`;
+                subscription = `<h3>${window.i18n.no_subscription}</h3><a href="/miniapp/tarifs" class="pay-btn">${window.i18n.pay}</a>`;
         }
 
         document.getElementById('subStatus').innerHTML = subscription;

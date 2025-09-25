@@ -28,11 +28,16 @@ class ExportController extends Controller
             ->get();
 
         if ($operations->isEmpty()) {
-            return redirect()->route('miniapp.index')->with('fail', 'Нет операций для экспорта');
+            return redirect()->route('miniapp.index')->with('fail', __('export.no_operations'));
         }
 
-        $categoryMapById = Category::pluck('name_ru', 'id')->toArray();
-        $categoryMapByName = Category::pluck('name_ru', 'name_en')->toArray();
+        $locale = Auth::user()->settings?->language ?? app()->getLocale();
+        app()->setLocale($locale);
+
+        $nameColumn = $locale === 'ru' ? 'name_ru' : 'name_en';
+
+        $categoryMapById = Category::pluck($nameColumn, 'id')->toArray();
+        $categoryMapByName = Category::pluck($nameColumn, 'name_en')->toArray();
 
         $operations = $operations->map(function ($op) use ($categoryMapById, $categoryMapByName) {
             $cat = $op->category;
@@ -58,13 +63,12 @@ class ExportController extends Controller
 
                     $this->sendToTelegram($telegramId, $fullPath, $filename);
 
-                    return redirect()->route('miniapp.index')->with('success', 'Файл Excel отправлен в Telegram');
-                    break;
+                    return redirect()->route('miniapp.index')->with('success', __('export.excel_success'));
 
                 case 'pdf':
                     $pdf = Pdf::loadView('exports.operations', [
                         'operations' => $operations,
-                        'title'      => 'История операций'
+                        'title'      => __('export.title')
                     ])->setPaper('a4', 'portrait');
 
                     $tempDir = storage_path("app/temp");
@@ -82,60 +86,63 @@ class ExportController extends Controller
 
                     $this->sendToTelegram($telegramId, $tempPath, $filename);
 
-                    return redirect()->route('miniapp.index')->with('success', 'Файл PDF отправлен в Telegram');
+                    return redirect()->route('miniapp.index')->with('success', __('export.pdf_success'));
 
                 case 'docx':
                     $phpWord = new PhpWord();
                     $section = $phpWord->addSection();
 
-                    $section->addText('История операций', ['bold' => true, 'size' => 14]);
+                    $section->addText(__('export.title'), ['bold' => true, 'size' => 14]);
                     $section->addTextBreak(1);
-                    $section->addText('Период: ' . now()->subDays(30)->format('d.m.Y') . ' - ' . now()->format('d.m.Y'));
+                    $section->addText(
+                        __('export.period', [
+                            'from' => now()->subDays(30)->format('d.m.Y'),
+                            'to'   => now()->format('d.m.Y')
+                        ])
+                    );
                     $section->addTextBreak(2);
 
-                    $section->addText('Доходы', ['bold' => true, 'size' => 12]);
+                    $section->addText(__('export.incomes'), ['bold' => true, 'size' => 12]);
                     $table = $section->addTable();
                     $table->addRow();
-                    $table->addCell(2000)->addText('Дата', ['bold' => true]);
-                    $table->addCell(3000)->addText('Категория', ['bold' => true]);
-                    $table->addCell(2000)->addText('Сумма', ['bold' => true]);
-
-                    $categoryMapByName = Category::pluck('name_ru', 'name_en')->toArray();
+                    $table->addCell(2000)->addText(__('export.date'), ['bold' => true]);
+                    $table->addCell(3000)->addText(__('export.category'), ['bold' => true]);
+                    $table->addCell(2000)->addText(__('export.amount'), ['bold' => true]);
 
                     foreach ($operations->where('type', 'income') as $op) {
                         $table->addRow();
                         $table->addCell(2000)->addText($op->occurred_at->format('d.m.Y H:i'));
-                        $table->addCell(3000)->addText($categoryMapByName[$op->category] ?? $op->category ?? '-');
+                        $table->addCell(3000)->addText($op->category_name ?? '-');
                         $table->addCell(2000)->addText(number_format($op->amount, 2) . ' ' . $op->currency);
                     }
 
                     $table->addRow();
-                    $table->addCell(5000, ['gridSpan' => 2])->addText('Итого доходов', ['bold' => true]);
+                    $table->addCell(5000, ['gridSpan' => 2])->addText(__('export.total_incomes'), ['bold' => true]);
                     $table->addCell(2000)->addText(
-                        number_format($operations->where('type', 'income')->sum('amount'), 2) . ' KZT',
+                        number_format($operations->where('type', 'income')->sum('amount'), 2) . ' ' . $operations->first()->currency,
                         ['bold' => true]
                     );
 
                     $section->addTextBreak(2);
 
-                    $section->addText('Расходы', ['bold' => true, 'size' => 12]);
+                    $section->addText(__('export.expenses'), ['bold' => true, 'size' => 12]);
                     $table = $section->addTable();
                     $table->addRow();
-                    $table->addCell(2000)->addText('Дата', ['bold' => true]);
-                    $table->addCell(3000)->addText('Категория', ['bold' => true]);
-                    $table->addCell(2000)->addText('Сумма', ['bold' => true]);
+                    $table->addCell(2000)->addText(__('export.date'), ['bold' => true]);
+                    $table->addCell(3000)->addText(__('export.category'), ['bold' => true]);
+                    $table->addCell(2000)->addText(__('export.amount'), ['bold' => true]);
 
                     foreach ($operations->where('type', 'expense') as $op) {
                         $table->addRow();
                         $table->addCell(2000)->addText($op->occurred_at->format('d.m.Y H:i'));
-                        $table->addCell(3000)->addText($categoryMapByName[$op->category] ?? $op->category ?? '-');
+                        $table->addCell(3000)->addText($op->category_name ?? '-');
                         $table->addCell(2000)->addText(number_format($op->amount, 2) . ' ' . $op->currency);
                     }
 
                     $table->addRow();
-                    $table->addCell(5000, ['gridSpan' => 2])->addText('Итого расходов', ['bold' => true]);
+                    $table->addCell(5000, ['gridSpan' => 2])->addText(__('export.total_expenses'), ['bold' => true]);
                     $table->addCell(2000)->addText(
-                        number_format($operations->where('type', 'expense')->sum('amount'), 2) . ' KZT',
+                        number_format($operations->where('type', 'expense')->sum('amount'), 2) . ' ' . $operations->first()->currency,
                         ['bold' => true]
                     );
 
@@ -149,15 +156,13 @@ class ExportController extends Controller
 
                     $this->sendToTelegram($telegramId, $tempPath, $filename);
 
-                    return redirect()->route('miniapp.index')->with('success', 'Файл DOCX отправлен в Telegram');
-                    break;
+                    return redirect()->route('miniapp.index')->with('success', __('export.docx_success'));
 
                 default:
-                    abort(400, 'Неверный формат. Доступные: xlsx, pdf, docx');
+                    abort(400, __('export.invalid_format'));
             }
         } catch (\Exception $e) {
             Log::error('Export error: ' . $e->getMessage());
-            Log::error('File path: ' . ($fullPath ?? 'N/A'));
 
             return response()->json(['error' => 'Ошибка при создании файла: ' . $e->getMessage()], 500);
         }
@@ -174,8 +179,6 @@ class ExportController extends Controller
             if ($fileSize === 0) {
                 throw new \Exception("Файл пустой: {$filePath}");
             }
-
-            Log::info("Sending file to Telegram: {$filePath}, Size: {$fileSize} bytes");
 
             $response = Telegram::document($chatId, $filePath, $filename)->send();
 

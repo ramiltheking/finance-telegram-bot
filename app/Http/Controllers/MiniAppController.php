@@ -14,12 +14,12 @@ use Carbon\Carbon;
 
 class MiniAppController extends Controller
 {
-    public function index(Request $request)
+    public function dashboard(Request $request)
     {
-        return view('miniapp.index');
+        return view('miniapp.dashboard');
     }
 
-    public function data(Request $request)
+    public function dashboardData(Request $request)
     {
         $initData = $request->input('initData');
 
@@ -40,8 +40,10 @@ class MiniAppController extends Controller
             ->orderByDesc('occurred_at')
             ->get();
 
+        $locale = Auth::user()->settings?->language;
+
         $categoryMapById = Category::pluck('name_ru', 'id')->toArray();
-        $categoryMapByName = Category::pluck('name_ru', 'name_en')->toArray();
+        $categoryMapByName = $locale === 'ru' ? Category::pluck('name_ru', 'name_en')->toArray() : Category::pluck('name_en', 'name_en')->toArray();
 
         $categories = $operations->groupBy('category')->mapWithKeys(function ($ops, $category) use ($categoryMapById, $categoryMapByName) {
             $translated = $categoryMapById[$category] ?? $categoryMapByName[$category] ?? $category;
@@ -80,74 +82,21 @@ class MiniAppController extends Controller
         if ($operations->isEmpty() && $payments->isEmpty()) {
             return response()->json([
                 'emptyOperations' => true,
-                'emptyPayments'   => true,
-                'messageOperations' => 'Операции отсутствуют',
-                'messagePayments'   => 'Платежи отсутствуют',
+                'messageOperations' => __('dashboard.operations_not_found'),
                 'categories'    => [],
                 'operations'    => [],
                 'payments'      => [],
-                'subscription'  => $subscription ?? ['status' => 'expired', 'message' => 'Оплатите тариф'],
+                'subscription'  => $subscription ?? ['status' => 'expired', 'message' => __('dashboard.pay_again')],
             ]);
         }
 
         return response()->json([
             'emptyOperations' => $operations->isEmpty(),
-            'emptyPayments'   => $payments->isEmpty(),
-            'messageOperations' => $operations->isEmpty() ? 'Операции отсутствуют' : null,
-            'messagePayments'   => $payments->isEmpty() ? 'Платежи отсутствуют' : null,
+            'messageOperations' => $operations->isEmpty() ? __('dashboard.operations_not_found') : null,
             'categories'      => $operations->isEmpty() ? [] : $categories,
             'operations'      => $operations->take(10),
             'payments'        => $payments->take(10),
-            'subscription'    => $subscription ?? ['status' => 'expired', 'message' => 'Оплатите тариф'],
+            'subscription'    => $subscription ?? ['status' => 'expired', 'message' => __('dashboard.pay_again')],
         ]);
-    }
-
-    public function auth(Request $request)
-    {
-        $initDataRaw = $request->input('initData');
-
-        if (!$initDataRaw) {
-            return response()->json(['success' => false, 'error' => 'initData missing'], 400);
-        }
-
-        if (!is_string($initDataRaw)) {
-            $initDataRaw = (string) $initDataRaw;
-        }
-
-        parse_str($initDataRaw, $data);
-
-        if (!$this->checkTelegramAuth($data)) {
-            return response()->json(['success' => false, 'error' => 'Invalid initData'], 403);
-        }
-
-        $userData = json_decode($data['user'], true);
-
-        if (!$userData) {
-            return response()->json(['success' => false, 'error' => 'Invalid user data'], 400);
-        }
-
-        $user = UserService::registerOrUpdate($userData);
-
-        Auth::login($user);
-
-        return response()->json(['success' => true]);
-    }
-
-    private function checkTelegramAuth(array $data): bool
-    {
-        $botToken = config('services.telegram.bot_token');
-
-        $hash = $data['hash'];
-        unset($data['hash']);
-
-        ksort($data);
-        $checkString = collect($data)
-            ->map(fn($v, $k) => "$k=$v")
-            ->implode("\n");
-
-        $secretKey = hash_hmac('sha256', $botToken, 'WebAppData', true);
-        $calculatedHash = hash_hmac('sha256', $checkString, $secretKey);
-
-        return hash_equals($hash, $calculatedHash);
     }
 }

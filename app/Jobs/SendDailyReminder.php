@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Facades\Telegram;
 use App\Models\User;
+use App\Telegram\Helpers\InlineButton;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -38,7 +39,9 @@ class SendDailyReminder implements ShouldQueue
             $userTime = $now->copy()->setTimezone($timezone);
 
             if ($userTime->hour == $hour && $userTime->minute == $minute) {
-                Telegram::message($user->telegram_id, __('messages.reminder', locale: $user->settings->language))->send();
+                $settings_url = env('APP_URL') . '/miniapp/settings';
+                InlineButton::web_app('⚙️ Настроить напоминания', $settings_url, 1);
+                Telegram::inlineButtons($user->telegram_id, __('messages.reminder', locale: $user->settings->language), InlineButton::$buttons)->send();
 
                 Log::info("Напоминание отправлено пользователю {$user->telegram_id} ({$timezone}) в {$hour}:{$minute}");
             }

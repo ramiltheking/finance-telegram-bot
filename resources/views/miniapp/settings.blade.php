@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>Настройки</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="/css/settings.css">
@@ -21,13 +20,13 @@
             </svg>
         </a>
         <div class="header-title">
-            <strong>Настройки</strong>
+            <strong>{{ __('settings.title') }}</strong>
         </div>
     </header>
 
     <main class="main">
         <div class="card">
-            <h3>💱 Валюта</h3>
+            <h3>{{ __('settings.currency') }}</h3>
             <div class="buttons__group">
                 <button>KZT</button>
                 <button>RUB</button>
@@ -37,17 +36,17 @@
         </div>
 
         <div class="card">
-            <h3>⏰ Часовой пояс</h3>
+            <h3>{{ __('settings.timezone') }}</h3>
             <strong id="userTimezone"></strong><br><br>
-            <button id="detectTimezone">Определить автоматически</button>
+            <button id="detectTimezone">{{ __('settings.detect_timezone') }}</button>
         </div>
 
         <div class="card">
-            <h3>🔔 Напоминания</h3>
+            <h3>{{ __('settings.reminders') }}</h3>
             <div class="toggle-wrapper">
                 <input type="checkbox" id="reminderToggle" class="toggle-input">
                 <label for="reminderToggle" class="toggle-label"></label>
-                <span class="toggle-text">Включить ежедневные напоминания</span>
+                <span class="toggle-text">{{ __('settings.enable_reminders') }}</span>
             </div>
             <div id="reminderTime" class="time-settings hidden">
                 <label>
@@ -61,7 +60,7 @@
         </div>
 
         <div class="card">
-            <h3>🌐 Язык</h3>
+            <h3>{{ __('settings.language') }}</h3>
             <div class="buttons__group">
                 <button data-lang="ru">Русский</button>
                 <button data-lang="en">English</button>

@@ -1,4 +1,5 @@
-const TokenCSRF = document.querySelector('meta[name="csrf-token"]').content;
+const tg = window.Telegram.WebApp;
+tg.expand();
 
 function getUtcOffset() {
     const offsetMinutes = new Date().getTimezoneOffset();
@@ -11,12 +12,11 @@ document.getElementById('detectTimezone').addEventListener('click', () => {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const { latitude, longitude } = pos.coords;
 
-            const response = await fetch('/detect-timezone', {
+            const response = await fetch('/miniapp/detect-timezone', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': TokenCSRF
                 },
                 body: JSON.stringify({
                     lat: latitude,
@@ -121,9 +121,9 @@ async function saveSetting(key, value) {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'X-CSRF-TOKEN': TokenCSRF
         },
         body: JSON.stringify({
+            initData: tg.initData,
             key,
             value
         })

@@ -6,6 +6,7 @@ use App\Facades\Telegram;
 use App\Telegram\Bot\Factory;
 use App\Telegram\Webhook\Webhook;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -32,5 +33,9 @@ class AppServiceProvider extends ServiceProvider
         {
             return new Webhook($request, new Telegram());
         });
+
+        if (config('app.env') === 'local') {
+            URL::forceScheme('https');
+        }
     }
 }
