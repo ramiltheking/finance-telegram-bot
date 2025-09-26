@@ -3,7 +3,6 @@
 use App\Facades\Telegram;
 use App\Http\Middleware\SetUserLocale;
 use App\Http\Middleware\TelegramAuth;
-use App\Jobs\SendDailyReminder;
 use Illuminate\Foundation\Application;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,10 +16,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append(SetUserLocale::class);
-        $middleware->append(TelegramAuth::class);
+        $middleware->alias([
+            'user:locale' => SetUserLocale::class,
+            'telegram:auth' => TelegramAuth::class,
+        ]);
         $middleware->validateCsrfTokens(except: [
             'miniapp/*',
+        ]);
+        $middleware->web(append: [
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -30,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withSchedule(function (Schedule $schedule) {
-        $schedule->job(SendDailyReminder::class)->everyMinute();
+        $schedule->command('reminders:check')->everyMinute();
+        $schedule->command('reminders:send')->everyMinute();
     })
     ->create();

@@ -10,6 +10,7 @@ class Reminder extends Model
         'user_id',
         'time',
         'text',
+        'status',
     ];
 
     public function user()

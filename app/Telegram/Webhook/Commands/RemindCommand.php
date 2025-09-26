@@ -3,7 +3,6 @@
 namespace App\Telegram\Webhook\Commands;
 
 use App\Facades\Telegram;
-use App\Jobs\SendTelegramReminder;
 use App\Models\Reminder;
 use App\Telegram\Webhook\Webhook;
 use Carbon\Carbon;
@@ -40,23 +39,18 @@ class RemindCommand extends Webhook
         }
 
         $time = sprintf('%02d:%02d:00', $hours, $minutes);
+        $text = $customText
+            ? '🔔 Напоминание: ' . $customText
+            : '🔔 Напоминание: Заполните расходы/доходы';
 
-        $text = '🔔 Напоминание: ' . $customText ?: '🔔 Напоминание: Заполните расходы/доходы';
-
-        $reminder = Reminder::create([
+        Reminder::create([
             'user_id' => $userId,
             'time' => $time,
-            'text' => $text
+            'text' => $text,
+            'status' => 'pending',
         ]);
 
-        $sendAt = Carbon::today()->setTime($hours, $minutes, 0);
-        if ($sendAt->lt(now())) {
-            $sendAt->addDay();
-        }
-
-        SendTelegramReminder::dispatch($userId, $text)->delay($sendAt);
-
-        $displayTime = $sendAt->format('H:i');
+        $displayTime = Carbon::createFromTime($hours, $minutes)->format('H:i');
         Telegram::message($userId, "✅ Напоминание установлено на {$displayTime}")->send();
     }
 }

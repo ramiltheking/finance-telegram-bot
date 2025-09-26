@@ -53,7 +53,7 @@ class OpenAIService
             1) For "category", you must always return only a **subcategory** (leaf-node) from the list (those inside groups like "Salary", "Rent / Mortgage", "Groceries", etc.). Never return parent groups (e.g. "Food & Leisure", "Housing & Utilities"). If none match, return "Other".
             2) Do not invent new categories.
             3) "type" must be "income" if the category is from INCOME list, or "expense" if from EXPENSE list.
-            4) "title" return in Russian language.
+            4) return of the “title” in the same language that was used by the user of the written financial transaction.
             4) "occurred_at" must be today’s date if not explicitly mentioned.
             5) Determine the currency from the text or from the context:
             - If text contains "доллар", "бакс", "usd", "$" → "USD"

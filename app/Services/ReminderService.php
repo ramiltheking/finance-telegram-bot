@@ -1,23 +1,16 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Services;
 
 use App\Facades\Telegram;
 use App\Models\User;
 use App\Telegram\Helpers\InlineButton;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
-class SendDailyReminder implements ShouldQueue
+class ReminderService
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    public function handle()
+    public function sendDailyReminders()
     {
         $now = Carbon::now('UTC');
 
@@ -33,15 +26,15 @@ class SendDailyReminder implements ShouldQueue
             }
 
             $timezone = $settings->timezone ?? 'UTC';
-            $hour     = $settings->reminder_hour ?? 22;
-            $minute   = $settings->reminder_minute ?? 0;
+            $hour = $settings->reminder_hour ?? 22;
+            $minute = $settings->reminder_minute ?? 0;
 
             $userTime = $now->copy()->setTimezone($timezone);
 
             if ($userTime->hour == $hour && $userTime->minute == $minute) {
                 $settings_url = env('APP_URL') . '/miniapp/settings';
                 InlineButton::web_app('⚙️ Настроить напоминания', $settings_url, 1);
-                Telegram::inlineButtons($user->telegram_id, __('messages.reminder', locale: $user->settings->language), InlineButton::$buttons)->send();
+                Telegram::inlineButtons($user->telegram_id, __('messages.reminder', locale: $settings->language), InlineButton::$buttons)->send();
 
                 Log::info("Напоминание отправлено пользователю {$user->telegram_id} ({$timezone}) в {$hour}:{$minute}");
             }

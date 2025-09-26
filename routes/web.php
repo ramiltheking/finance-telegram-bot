@@ -24,7 +24,7 @@ Route::prefix('miniapp')->middleware([TelegramAuth::class, SetUserLocale::class]
     Route::get('/', [MiniAppController::class, 'dashboard'])->name('miniapp.index');
     Route::post('/dashboard/data', [MiniAppController::class, 'dashboardData']);
 
-    Route::view('/profile', 'miniapp.profile')->name('miniapp.profile');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('miniapp.profile');
     Route::post('/profile/data', [ProfileController::class, 'profileData']);
     Route::post('/detect-timezone', [SettingsController::class, 'detectTimezone']);
     Route::post('/profile/delete', [ProfileController::class, 'delete'])->name('profile.delete');
@@ -37,7 +37,6 @@ Route::prefix('miniapp')->middleware([TelegramAuth::class, SetUserLocale::class]
     Route::get('/export/{format}', [ExportController::class, 'export'])->name('miniapp.export');
 });
 
-Route::post('/robokassa/result', [RobokassaController::class, 'result'])->name('robokassa.result');
 Route::get('/robokassa/success', [RobokassaController::class, 'success'])->name('robokassa.success');
 Route::get('/robokassa/fail', [RobokassaController::class, 'fail'])->name('robokassa.fail');
 

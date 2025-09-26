@@ -3,20 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Facades\Telegram;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\Request;
-use App\Exports\OperationsExport;
 use App\Models\Category;
 use App\Models\Operation;
-use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\Export\ExportService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use PhpOffice\PhpWord\PhpWord;
-use PhpOffice\PhpWord\IOFactory;
+use Illuminate\Http\Request;
 
 class ExportController extends Controller
 {
+    protected ExportService $exportService;
+
+    public function __construct(ExportService $exportService)
+    {
+        $this->exportService = $exportService;
+    }
+
     public function export(Request $request, $format)
     {
         $telegramId = Auth::user()->telegram_id;
@@ -35,7 +37,6 @@ class ExportController extends Controller
         app()->setLocale($locale);
 
         $nameColumn = $locale === 'ru' ? 'name_ru' : 'name_en';
-
         $categoryMapById = Category::pluck($nameColumn, 'id')->toArray();
         $categoryMapByName = Category::pluck($nameColumn, 'name_en')->toArray();
 
@@ -46,121 +47,13 @@ class ExportController extends Controller
         });
 
         $filename = "operations_{$telegramId}_" . now()->format('Y-m-d_His') . ".{$format}";
-        $directory = 'exports';
 
         try {
-            switch ($format) {
-                case 'xlsx':
-                    $filePath = "{$directory}/{$filename}";
+            $filePath = $this->exportService->export($format, $filename, $operations);
 
-                    Excel::store(new OperationsExport($operations), $filePath, 'local');
+            $this->sendToTelegram($telegramId, $filePath, $filename);
 
-                    $fullPath = Storage::path($filePath);
-
-                    if (!Storage::exists($filePath) || Storage::size($filePath) === 0) {
-                        throw new \Exception("Excel файл не был создан или пустой");
-                    }
-
-                    $this->sendToTelegram($telegramId, $fullPath, $filename);
-
-                    return redirect()->route('miniapp.index')->with('success', __('export.excel_success'));
-
-                case 'pdf':
-                    $pdf = Pdf::loadView('exports.operations', [
-                        'operations' => $operations,
-                        'title'      => __('export.title')
-                    ])->setPaper('a4', 'portrait');
-
-                    $tempDir = storage_path("app/temp");
-                    if (!file_exists($tempDir)) {
-                        mkdir($tempDir, 0777, true);
-                    }
-
-                    $tempPath = $tempDir . '/' . $filename;
-
-                    file_put_contents($tempPath, $pdf->output());
-
-                    if (!file_exists($tempPath) || filesize($tempPath) === 0) {
-                        throw new \Exception("PDF файл не был создан или пустой: {$tempPath}");
-                    }
-
-                    $this->sendToTelegram($telegramId, $tempPath, $filename);
-
-                    return redirect()->route('miniapp.index')->with('success', __('export.pdf_success'));
-
-                case 'docx':
-                    $phpWord = new PhpWord();
-                    $section = $phpWord->addSection();
-
-                    $section->addText(__('export.title'), ['bold' => true, 'size' => 14]);
-                    $section->addTextBreak(1);
-                    $section->addText(
-                        __('export.period', [
-                            'from' => now()->subDays(30)->format('d.m.Y'),
-                            'to'   => now()->format('d.m.Y')
-                        ])
-                    );
-                    $section->addTextBreak(2);
-
-                    $section->addText(__('export.incomes'), ['bold' => true, 'size' => 12]);
-                    $table = $section->addTable();
-                    $table->addRow();
-                    $table->addCell(2000)->addText(__('export.date'), ['bold' => true]);
-                    $table->addCell(3000)->addText(__('export.category'), ['bold' => true]);
-                    $table->addCell(2000)->addText(__('export.amount'), ['bold' => true]);
-
-                    foreach ($operations->where('type', 'income') as $op) {
-                        $table->addRow();
-                        $table->addCell(2000)->addText($op->occurred_at->format('d.m.Y H:i'));
-                        $table->addCell(3000)->addText($op->category_name ?? '-');
-                        $table->addCell(2000)->addText(number_format($op->amount, 2) . ' ' . $op->currency);
-                    }
-
-                    $table->addRow();
-                    $table->addCell(5000, ['gridSpan' => 2])->addText(__('export.total_incomes'), ['bold' => true]);
-                    $table->addCell(2000)->addText(
-                        number_format($operations->where('type', 'income')->sum('amount'), 2) . ' ' . $operations->first()->currency,
-                        ['bold' => true]
-                    );
-
-                    $section->addTextBreak(2);
-
-                    $section->addText(__('export.expenses'), ['bold' => true, 'size' => 12]);
-                    $table = $section->addTable();
-                    $table->addRow();
-                    $table->addCell(2000)->addText(__('export.date'), ['bold' => true]);
-                    $table->addCell(3000)->addText(__('export.category'), ['bold' => true]);
-                    $table->addCell(2000)->addText(__('export.amount'), ['bold' => true]);
-
-                    foreach ($operations->where('type', 'expense') as $op) {
-                        $table->addRow();
-                        $table->addCell(2000)->addText($op->occurred_at->format('d.m.Y H:i'));
-                        $table->addCell(3000)->addText($op->category_name ?? '-');
-                        $table->addCell(2000)->addText(number_format($op->amount, 2) . ' ' . $op->currency);
-                    }
-
-                    $table->addRow();
-                    $table->addCell(5000, ['gridSpan' => 2])->addText(__('export.total_expenses'), ['bold' => true]);
-                    $table->addCell(2000)->addText(
-                        number_format($operations->where('type', 'expense')->sum('amount'), 2) . ' ' . $operations->first()->currency,
-                        ['bold' => true]
-                    );
-
-                    $tempPath = storage_path("app/temp/{$filename}");
-                    if (!file_exists(dirname($tempPath))) {
-                        mkdir(dirname($tempPath), 0777, true);
-                    }
-
-                    $writer = IOFactory::createWriter($phpWord, 'Word2007');
-                    $writer->save($tempPath);
-
-                    $this->sendToTelegram($telegramId, $tempPath, $filename);
-
-                    return redirect()->route('miniapp.index')->with('success', __('export.docx_success'));
-
-                default:
-                    abort(400, __('export.invalid_format'));
-            }
+            return redirect()->route('miniapp.index')->with('success', __("export.{$format}_success"));
         } catch (\Exception $e) {
             Log::error('Export error: ' . $e->getMessage());
 
@@ -170,26 +63,14 @@ class ExportController extends Controller
 
     protected function sendToTelegram($chatId, $filePath, $filename)
     {
-        try {
-            if (!file_exists($filePath)) {
-                throw new \Exception("Файл не существует: {$filePath}");
-            }
-
-            $fileSize = filesize($filePath);
-            if ($fileSize === 0) {
-                throw new \Exception("Файл пустой: {$filePath}");
-            }
-
-            $response = Telegram::document($chatId, $filePath, $filename)->send();
-
-            unlink($filePath);
-
-            return $response;
-        } catch (\Exception $e) {
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
-            throw $e;
+        if (!file_exists($filePath) || filesize($filePath) === 0) {
+            throw new \Exception("Файл не существует или пустой: {$filePath}");
         }
+
+        $response = Telegram::document($chatId, $filePath, $filename)->send();
+
+        unlink($filePath);
+
+        return $response;
     }
 }

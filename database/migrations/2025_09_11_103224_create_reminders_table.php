@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('user_id')->references('telegram_id')->on('users')->cascadeOnDelete();
             $table->time('time');
             $table->string('text')->default('🔔 Напоминание: Заполните расходы/доходы');
+            $table->enum('status', ['pending', 'send'])->default('pending');
             $table->timestamps();
         });
     }

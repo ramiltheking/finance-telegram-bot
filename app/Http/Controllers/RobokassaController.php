@@ -11,9 +11,9 @@ class RobokassaController extends Controller
 {
     public function result(Request $request)
     {
-        $outSum  = $request->input('OutSum');
-        $invId   = $request->input('InvId');
-        $crc     = strtoupper($request->input('SignatureValue'));
+        $outSum = $request->input('OutSum');
+        $invId = $request->input('InvId');
+        $crc = strtoupper($request->input('SignatureValue'));
 
         $password2 = env('ROBOKASSA_PASSWORD2');
         $myCrc = strtoupper(md5("$outSum:$invId:$password2"));

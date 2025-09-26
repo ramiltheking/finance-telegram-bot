@@ -40,7 +40,7 @@ class MiniAppController extends Controller
             ->orderByDesc('occurred_at')
             ->get();
 
-        $locale = Auth::user()->settings?->language;
+        $locale = Auth::user()->settings?->language ?? 'ru';
 
         $categoryMapById = Category::pluck('name_ru', 'id')->toArray();
         $categoryMapByName = $locale === 'ru' ? Category::pluck('name_ru', 'name_en')->toArray() : Category::pluck('name_en', 'name_en')->toArray();
@@ -63,11 +63,11 @@ class MiniAppController extends Controller
 
         if ($user) {
             $subscription = [
-                'status'                 => $user->subscription_status,
-                'trial_started_at'       => $user->trial_started_at?->format('d.m.Y'),
-                'trial_ends_at'          => $user->trial_ends_at?->format('d.m.Y'),
+                'status' => $user->subscription_status,
+                'trial_started_at' => $user->trial_started_at?->format('d.m.Y'),
+                'trial_ends_at' => $user->trial_ends_at?->format('d.m.Y'),
                 'subscription_started_at' => $user->subscription_started_at?->format('d.m.Y'),
-                'subscription_ends_at'   => $user->subscription_ends_at?->format('d.m.Y'),
+                'subscription_ends_at' => $user->subscription_ends_at?->format('d.m.Y'),
             ];
 
             if ($user->subscription_status === 'trial' && $user->trial_ends_at && $user->trial_ends_at->isPast()) {
@@ -83,20 +83,20 @@ class MiniAppController extends Controller
             return response()->json([
                 'emptyOperations' => true,
                 'messageOperations' => __('dashboard.operations_not_found'),
-                'categories'    => [],
-                'operations'    => [],
-                'payments'      => [],
-                'subscription'  => $subscription ?? ['status' => 'expired', 'message' => __('dashboard.pay_again')],
+                'categories' => [],
+                'operations' => [],
+                'payments' => [],
+                'subscription' => $subscription ?? ['status' => 'expired', 'message' => __('dashboard.pay_again')],
             ]);
         }
 
         return response()->json([
             'emptyOperations' => $operations->isEmpty(),
             'messageOperations' => $operations->isEmpty() ? __('dashboard.operations_not_found') : null,
-            'categories'      => $operations->isEmpty() ? [] : $categories,
-            'operations'      => $operations->take(10),
-            'payments'        => $payments->take(10),
-            'subscription'    => $subscription ?? ['status' => 'expired', 'message' => __('dashboard.pay_again')],
+            'categories' => $operations->isEmpty() ? [] : $categories,
+            'operations' => $operations->take(10),
+            'payments' => $payments->take(10),
+            'subscription' => $subscription ?? ['status' => 'expired', 'message' => __('dashboard.pay_again')],
         ]);
     }
 }

@@ -11,6 +11,12 @@ class TarifsController extends Controller
 {
     public function index(Request $request)
     {
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('miniapp.index')->withErrors(['auth' => 'Пользователь не аутентифицирован']);
+        }
+
         $priceInKZT = '2500.00';
         $tariffName = "Стандартный";
         $login = env('ROBOKASSA_MERCHANT_LOGIN');
@@ -26,37 +32,31 @@ class TarifsController extends Controller
 
         if ($existingPayment) {
             $invId = $existingPayment->inv_id;
-            $signature = PaymentService::makeSignature($login, $priceInKZT, (string)$invId, $pass1);
-            $url = PaymentService::buildRobokassaUrl(
-                $login,
-                $priceInKZT,
-                (string)$invId,
-                'Тариф использования бота VoiceFinance',
-                $signature
-            );
         } else {
             $invId = random_int(100000, 99999999);
-            $signature = PaymentService::makeSignature($login, $priceInKZT, (string)$invId, $pass1);
-            $url = PaymentService::buildRobokassaUrl(
-                $login,
-                $priceInKZT,
-                (string)$invId,
-                'Тариф использования бота VoiceFinance',
-                $signature
-            );
 
             Payment::create([
                 'user_id' => $userId,
-                'inv_id'  => $invId,
-                'amount'  => $priceInKZT,
-                'status'  => 'pending',
+                'inv_id' => $invId,
+                'amount' => $priceInKZT,
+                'status' => 'pending',
             ]);
         }
 
+        $signature = PaymentService::makeSignature($login, $priceInKZT, (string)$invId, $pass1);
+
+        $url = PaymentService::buildRobokassaUrl(
+            $login,
+            $priceInKZT,
+            (string)$invId,
+            'Тариф использования бота VoiceFinance',
+            $signature
+        );
+
         return view('miniapp.tarif', [
             'tariffName' => $tariffName,
-            'price'      => $priceInKZT,
-            'url'        => $url,
+            'price' => $priceInKZT,
+            'url' => $url,
         ]);
     }
 }

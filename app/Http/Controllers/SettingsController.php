@@ -14,7 +14,7 @@ class SettingsController extends Controller
         $user = Auth::user();
 
         if (!$user) {
-            abort(401);
+            return redirect()->route('miniapp.index')->withErrors(['auth' => 'Пользователь не аутентифицирован']);
         }
 
         $settings = UserSetting::firstOrCreate([
@@ -32,6 +32,10 @@ class SettingsController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Пользователь не аутентифицирован'], 401);
+        }
 
         $settings = UserSetting::firstOrCreate([
             'user_id' => $user->telegram_id,
@@ -69,6 +73,12 @@ class SettingsController extends Controller
 
     public function detectTimezone(Request $request)
     {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Пользователь не аутентифицирован'], 401);
+        }
+
         $lat = $request->lat;
         $lon = $request->lon;
 

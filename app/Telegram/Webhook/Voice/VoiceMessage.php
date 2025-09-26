@@ -25,13 +25,13 @@ class VoiceMessage extends Webhook
         $voiceDuration = $voice['duration'];
 
         if ($voiceDuration > 20) {
-            Telegram::message($this->chat_id, "❗ Длительность аудиосообщения превышает 20 секунд. Пожалуйста, отправьте более короткое сообщение.", $this->message_id)->send();
+            Telegram::message($this->chat_id, __('messages.audio_message_exceeds'), $this->message_id)->send();
             return;
         }
 
         $fileId = $voice['file_id'];
 
-        $resp = Http::get("https://api.telegram.org/bot".env('TELEGRAM_BOT_TOKEN')."/getFile", [
+        $resp = Http::get("https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/getFile", [
             'file_id' => $fileId,
         ])->json();
 
@@ -41,29 +41,29 @@ class VoiceMessage extends Webhook
         }
 
         $filePath = $resp['result']['file_path'];
-        $fileUrl  = "https://api.telegram.org/file/bot".env('TELEGRAM_BOT_TOKEN')."/".$filePath;
+        $fileUrl  = "https://api.telegram.org/file/bot" . env('TELEGRAM_BOT_TOKEN') . "/" . $filePath;
 
         $binary = file_get_contents($fileUrl);
         $openai = new OpenAIService();
-        $text   = $openai->transcribeAudio($binary);
+        $text = $openai->transcribeAudio($binary);
 
         if (!$text) {
-            Telegram::message($this->chat_id, "❗ Не удалось распознать голосовое сообщение", $this->message_id)->send();
+            Telegram::message($this->chat_id, __('messages.audio_message_failed'), $this->message_id)->send();
             return;
         }
 
         $operation = $openai->parseOperationFromText($text);
 
         if (!$operation) {
-            Telegram::message($this->chat_id, "❗ Не удалось распознать операцию", $this->message_id)->send();
+            Telegram::message($this->chat_id, __('messages.operation_parse_failed'), $this->message_id)->send();
             return;
         }
 
         $currencyMap = [
-            'тенге'   => 'KZT',
-            'рубли'   => 'RUB',
+            'тенге' => 'KZT',
+            'рубли' => 'RUB',
             'доллары' => 'USD',
-            'евро'    => 'EUR',
+            'евро' => 'EUR',
         ];
         if (isset($operation['currency']) && isset($currencyMap[$operation['currency']])) {
             $operation['currency'] = $currencyMap[$operation['currency']];
@@ -78,7 +78,7 @@ class VoiceMessage extends Webhook
                     $operation['currency'] = 'KZT';
                 }
             } catch (\Throwable $e) {
-                Log::warning("Ошибка конвертации валюты: ".$e->getMessage());
+                Log::warning("Ошибка конвертации валюты: " . $e->getMessage());
             }
         }
 
@@ -87,13 +87,21 @@ class VoiceMessage extends Webhook
         $title    = $operation['title'] ?? '';
 
         $userText = $operation['type'] === 'income'
-            ? "✅ Добавить запись: Получил(-a) {$amount} {$currency} — {$title}"
-            : "✅ Добавить запись: Потратил(-a) {$amount} {$currency} — {$title}";
+            ? __('messages.income_text', [
+                'amount'   => $amount,
+                'currency' => $currency,
+                'title'    => $title,
+            ])
+            : __('messages.expense_text', [
+                'amount'   => $amount,
+                'currency' => $currency,
+                'title'    => $title,
+            ]);
 
         $user = User::where('telegram_id', $this->chat_id)->first();
 
         if (!$user) {
-            Telegram::message($this->chat_id, "❗ Пользователь не найден.", $this->message_id)->send();
+            Telegram::message($this->chat_id, __('messages.user_not_found'), $this->message_id)->send();
             return;
         }
 
@@ -110,8 +118,8 @@ class VoiceMessage extends Webhook
             'updated_at'  => now(),
         ]);
 
-        InlineButton::add('✅ Подтвердить', 'Confirm', ['operation_id' => $operationId,], 1);
-        InlineButton::add('❌ Отклонить', 'Decline', ['operation_id' => $operationId,], 1);
+        InlineButton::add(__('messages.confirm'), 'Confirm', ['operation_id' => $operationId,], 1);
+        InlineButton::add(__('messages.decline'), 'Decline', ['operation_id' => $operationId,], 1);
         Telegram::inlineButtons($this->chat_id, $userText, InlineButton::$buttons)->send();
 
         Log::info("Операция для подтверждения", $operation);

@@ -3,7 +3,7 @@
 return [
     'title' => 'Operations History',
     'no_operations' => 'No operations available for export',
-    'excel_success' => 'Excel file has been sent to Telegram',
+    'xlsx_success' => 'Excel file has been sent to Telegram',
     'pdf_success' => 'PDF file has been sent to Telegram',
     'docx_success' => 'DOCX file has been sent to Telegram',
     'history_title' => 'Operations history',
