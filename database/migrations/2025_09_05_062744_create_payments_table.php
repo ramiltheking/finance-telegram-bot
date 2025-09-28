@@ -18,6 +18,9 @@ return new class extends Migration
             $table->decimal('amount', 12, 2)->nullable();
             $table->string('status')->default('pending');
             $table->json('payload')->nullable();
+            $table->boolean('is_recurring')->default(false);
+            $table->string('recurring_token')->nullable();
+            $table->integer('recurring_attempts')->default(0);
             $table->timestamps();
         });
     }

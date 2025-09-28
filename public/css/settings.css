@@ -198,3 +198,107 @@ body {
 .hidden {
     display: none;
 }
+
+.subscription-card {
+    border-left: 4px solid var(--primary);
+}
+
+.subscription-info {
+    margin-bottom: 20px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--dark);
+    font-weight: 500;
+}
+
+.info-value {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.recurring-toggle {
+    margin: 15px 0;
+}
+
+.recurring-info {
+    margin-top: 15px;
+    padding: 15px;
+    background: var(--light);
+    border-radius: 8px;
+    border-left: 4px solid var(--secondary);
+}
+
+.info-note {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: var(--dark);
+}
+
+.manage-btn, .subscribe-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+}
+
+.manage-btn {
+    background: var(--primary);
+    color: white;
+}
+
+.manage-btn:hover {
+    background: #3a5fcd;
+}
+
+.subscribe-btn {
+    background: var(--secondary);
+    color: white;
+}
+
+.subscribe-btn:hover {
+    background: #17a673;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-active {
+    background: var(--secondary);
+    color: white;
+}
+
+.status-trial {
+    background: #FF9800;
+    color: white;
+}
+
+.status-expired {
+    background: var(--danger);
+    color: white;
+}

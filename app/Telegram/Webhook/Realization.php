@@ -35,18 +35,22 @@ class Realization
 
     public function take(Request $request)
     {
+        $user = null;
+
         if ($request->input('message.from'))
         {
             $user = UserService::registerOrUpdate($request->input('message.from'));
-        } elseif ($request->input('callback_query.from'))
+        }
+        elseif ($request->input('callback_query.from'))
         {
             $user = UserService::registerOrUpdate($request->input('callback_query.from'));
-        } elseif ($request->input('edited_message.from'))
+        }
+        elseif ($request->input('edited_message.from'))
         {
             $user = UserService::registerOrUpdate($request->input('edited_message.from'));
         }
 
-        if (!UserService::hasAccess($user))
+        if (!$user || !UserService::hasAccess($user))
         {
             return '\App\Telegram\Webhook\Actions\EndTarif';
         }
@@ -59,23 +63,19 @@ class Realization
                 return self::Commands[$command_name] ?? false;
             }
         }
-
         elseif($request->input('callback_query'))
         {
             $data = json_decode($request->input('callback_query')['data']);
             return '\App\Telegram\Webhook\Actions\\' . $data->action;
         }
-
         elseif ($request->input('message.voice'))
         {
             return VoiceMessage::class;
         }
-
         elseif($request->input('message'))
         {
             return Text::class;
         }
-
         else
         {
             return Other::class;

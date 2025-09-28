@@ -21,7 +21,11 @@ return new class extends Migration
             $table->timestamp('trial_ends_at')->nullable();
             $table->timestamp('subscription_started_at')->nullable();
             $table->timestamp('subscription_ends_at')->nullable();
-            $table->enum('subscription_status', ['trial','active','expired','cancelled'])->default('trial');
+            $table->enum('subscription_status', ['trial', 'active', 'expired', 'cancelled'])->default('trial');
+            $table->boolean('recurring_enabled')->default(false);
+            $table->string('recurring_token')->nullable();
+            $table->timestamp('recurring_activated_at')->nullable();
+            $table->timestamp('next_payment_date')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

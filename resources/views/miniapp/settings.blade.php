@@ -25,23 +25,69 @@
     </header>
 
     <main class="main">
-        <div class="card">
-            <h3>{{ __('settings.currency') }}</h3>
-            <div class="buttons__group">
-                <button>KZT</button>
-                <button>RUB</button>
-                <button>USD</button>
-                <button>EUR</button>
+        <div class="card subscription-card">
+            <h3>🤖 Управление подпиской</h3>
+
+            <div class="subscription-info">
+                <div class="info-row">
+                    <span class="info-label">Статус:</span>
+                    <span class="info-value" id="subscriptionStatus">Загрузка...</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Подписка до:</span>
+                    <span class="info-value" id="subscriptionEnds">Загрузка...</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Следующий платеж:</span>
+                    <span class="info-value" id="nextPayment">Загрузка...</span>
+                </div>
+            </div>
+
+            <div class="toggle-wrapper recurring-toggle">
+                <input type="checkbox" id="recurringToggle" class="toggle-input">
+                <label for="recurringToggle" class="toggle-label"></label>
+                <span class="toggle-text">Автопродление подписки</span>
+            </div>
+
+            <div id="recurringInfo" class="recurring-info hidden">
+                <p class="info-note">✅ Автопродление включено. Следующий платеж произойдет автоматически.</p>
+                <button id="manageSubscription" class="manage-btn">Управление подпиской</button>
+            </div>
+
+            <div id="recurringDisabled" class="recurring-info">
+                <p class="info-note">🔒 Совершите первый платеж для включения автопродления</p>
+                <a href="{{ route('miniapp.tarifs') }}" class="subscribe-btn">Оформить подписку</a>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card currency-card">
+            <h3>{{ __('settings.currency') }}</h3>
+            <div class="buttons__group">
+                <button data-currency="KZT">KZT</button>
+                <button data-currency="RUB">RUB</button>
+                <button data-currency="USD">USD</button>
+                <button data-currency="EUR">EUR</button>
+            </div>
+        </div>
+
+        <div class="card language-card">
+            <h3>{{ __('settings.language') }}</h3>
+            <div class="buttons__group">
+                <button data-lang="ru">Русский</button>
+                <button data-lang="en">English</button>
+                {{-- <button data-lang="kz">Қазақша</button> --}}
+            </div>
+        </div>
+
+        <div class="card timezone-card">
             <h3>{{ __('settings.timezone') }}</h3>
             <strong id="userTimezone"></strong><br><br>
             <button id="detectTimezone">{{ __('settings.detect_timezone') }}</button>
         </div>
 
-        <div class="card">
+        <div class="card reminders-card">
             <h3>{{ __('settings.reminders') }}</h3>
             <div class="toggle-wrapper">
                 <input type="checkbox" id="reminderToggle" class="toggle-input">
@@ -58,19 +104,11 @@
                 </label>
             </div>
         </div>
-
-        <div class="card">
-            <h3>{{ __('settings.language') }}</h3>
-            <div class="buttons__group">
-                <button data-lang="ru">Русский</button>
-                <button data-lang="en">English</button>
-                <button data-lang="kz">Қазақша</button>
-            </div>
-        </div>
     </main>
 
     <script>
         window.userSettings = @json($settings);
+        window.subscriptionInfo = @json($subscriptionInfo ?? []);
     </script>
     <script src="/js/settings.js"></script>
 
