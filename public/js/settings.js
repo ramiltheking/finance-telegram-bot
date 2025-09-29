@@ -36,6 +36,23 @@ async function saveSetting(key, value) {
     }
 }
 
+function showToast(message, type = 'success') {
+    Swal.fire({
+        toast: true,
+        position: 'bottom-end',
+        icon: type,
+        title: message,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        customClass: {
+            popup: type === 'error' ? 'app-toast warning' : 'app-toast',
+            title: 'app-toast-title',
+            timerProgressBar: 'app-toast-progress'
+        }
+    });
+}
+
 document.getElementById('detectTimezone').addEventListener('click', () => {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -61,35 +78,48 @@ document.getElementById('detectTimezone').addEventListener('click', () => {
                     document.getElementById('userTimezone').textContent = `${data.timezone} (${offsetStr})`;
 
                     await saveSetting('timezone', data.timezone);
+                    showToast(`Ваш часовой пояс упешно определен на ${data.timezone} (${offsetStr}).`);
                 } else {
-                    alert("Не удалось определить часовой пояс");
+                    showToast("Не удалось определить часовой пояс");
                 }
             } catch (error) {
                 console.error('Error detecting timezone:', error);
-                alert("Ошибка при определении часового пояса");
+                showToast("Ошибка при определении часового пояса", "error");
             }
         }, (error) => {
-            alert("Ошибка получения геолокации: " + error.message);
+            showToast("Ошибка получения геолокации", "error");
         });
     } else {
-        alert("Геолокация не поддерживается вашим устройством");
+        showToast("Геолокация не поддерживается вашим устройством", "error");
     }
 });
 
 function updateSubscriptionInfo(info) {
     const statusElement = document.getElementById('subscriptionStatus');
     const statusMap = {
-        'active': { text: 'Активна', class: 'status-active' },
-        'trial': { text: 'Пробный период', class: 'status-trial' },
-        'expired': { text: 'Истекла', class: 'status-expired' },
-        'cancelled': { text: 'Отменена', class: 'status-expired' }
+        'active': {
+            text: window.i18n.status_active,
+            class: 'status-active'
+        },
+        'trial': {
+            text: window.i18n.status_trial,
+            class: 'status-trial'
+        },
+        'expired': {
+            text: window.i18n.status_expired,
+            class: 'status-expired'
+        },
+        'cancelled': {
+            text: window.i18n.status_cancelled,
+            class: 'status-expired'
+        }
     };
 
     const status = statusMap[info.status] || statusMap.expired;
     statusElement.innerHTML = `<span class="status-badge ${status.class}">${status.text}</span>`;
 
-    document.getElementById('subscriptionEnds').textContent = info.subscription_ends_at || 'Не активна';
-    document.getElementById('nextPayment').textContent = info.next_payment_date || 'Не запланирован';
+    document.getElementById('subscriptionEnds').textContent = info.subscription_ends_at || window.i18n.not_active;
+    document.getElementById('nextPayment').textContent = info.next_payment_date || window.i18n.not_scheduled;
 
     const recurringToggle = document.getElementById('recurringToggle');
     const recurringInfo = document.getElementById('recurringInfo');
@@ -239,20 +269,10 @@ window.addEventListener('DOMContentLoaded', () => {
                     currencyButtons.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
 
-                    Swal.fire({
-                        title: 'Успех!',
-                        text: 'Валюта изменена',
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    });
+                    showToast(window.i18n.currency_changed_success);
                 } catch (error) {
                     console.error('Error saving currency:', error);
-                    Swal.fire({
-                        title: 'Ошибка!',
-                        text: 'Не удалось изменить валюту',
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
+                    showToast(window.i18n.currency_changed_error, 'error');
                 }
             });
         });
@@ -271,22 +291,13 @@ window.addEventListener('DOMContentLoaded', () => {
                     languageButtons.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
 
-                    Swal.fire({
-                        title: 'Успех!',
-                        text: 'Язык изменен. Страница будет перезагружена.',
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
+                    showToast(window.i18n.language_changed_success);
+                    setTimeout(() => {
                         location.reload();
-                    });
+                    }, 3000);
                 } catch (error) {
                     console.error('Error saving language:', error);
-                    Swal.fire({
-                        title: 'Ошибка!',
-                        text: 'Не удалось изменить язык',
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
+                    showToast(window.i18n.language_changed_error, 'error');
                 }
             });
         });

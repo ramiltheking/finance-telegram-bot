@@ -18,7 +18,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::post('/miniapp/auth', [MiniAppController::class, 'auth']);
+Route::get('/telegram-required', function () {
+    return view('telegram_required');
+})->name('telegram.required');
 
 Route::prefix('miniapp')->middleware([TelegramAuth::class, SetUserLocale::class])->group(function () {
     Route::get('/', [MiniAppController::class, 'dashboard'])->name('miniapp.index');

@@ -6,6 +6,7 @@ use App\Facades\Telegram;
 use App\Models\Category;
 use App\Models\Operation;
 use App\Services\Export\ExportService;
+use App\Services\UserService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -21,7 +22,13 @@ class ExportController extends Controller
 
     public function export(Request $request, $format)
     {
-        $telegramId = Auth::user()->telegram_id;
+        $user = Auth::user();
+
+        if (!UserService::hasAccess($user)) {
+            return redirect()->route('miniapp.index')->with('fail', __('export.subscription_required'));
+        }
+
+        $telegramId = $user->telegram_id;
 
         $operations = Operation::where('user_id', $telegramId)
             ->where('occurred_at', '>=', now()->subDays(30))

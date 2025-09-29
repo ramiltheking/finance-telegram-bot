@@ -2,6 +2,7 @@
 
 return [
     'title' => 'История операций',
+    'subscription_required' => 'Экспорт доступен только для подписчиков. Оформите подписку для доступа к этой функции.',
     'no_operations' => 'Нет операций для экспорта',
     'xlsx_success' => 'Файл Excel отправлен в Telegram',
     'pdf_success' => 'Файл PDF отправлен в Telegram',

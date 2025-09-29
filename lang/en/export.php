@@ -2,6 +2,7 @@
 
 return [
     'title' => 'Operations History',
+    'subscription_required' => 'Export is available for subscribers only. Please subscribe to access this feature.',
     'no_operations' => 'No operations available for export',
     'xlsx_success' => 'Excel file has been sent to Telegram',
     'pdf_success' => 'PDF file has been sent to Telegram',

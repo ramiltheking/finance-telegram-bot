@@ -8,6 +8,194 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="/css/profile.css">
+    <style>
+        :root {
+            --primary: #4e73df;
+            --secondary: #1cc88a;
+            --danger: #e74a3b;
+            --light: #f8f9fc;
+            --dark: #343a40;
+            --text: #444;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--light);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            max-width: 1160px;
+            width: 95%;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .main {
+            flex: 1 1 auto;
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prev-btn {
+            position: absolute;
+            left: 0px;
+            top: 5px;
+            padding: 10px 20px;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .settings-btn {
+            position: absolute;
+            right: 0px;
+            top: 5px;
+            padding: 10px 20px;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .prev-btn:hover {
+            transform: translate(-5px, 0);
+            opacity: 0.8;
+        }
+
+        .settings-btn:hover {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+
+        .header-title {
+            font-size: 24px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid #4e73df;
+        }
+
+        .username {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .pay-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            border: none;
+            border-radius: 12px;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .pay-btn:hover {
+            background: linear-gradient(135deg, #43A047, #1B5E20);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .pay-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .message {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .list-item {
+            background: #fff;
+            padding: 12px 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            font-size: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item span {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .danger-btn {
+            background: #d9534f;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .danger-btn:hover {
+            background: #c9302c;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .list-item {
+                font-size: 14px;
+                padding: 10px 12px;
+            }
+
+            h2,
+            h3 {
+                font-size: 18px;
+            }
+        }
+    </style>
+    <script src="/js/checkFromTelegram.js"></script>
 </head>
 
 <body>
@@ -56,8 +244,116 @@
 
     <script>
         window.i18n = @json(__('profile'));
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        const user = tg.initDataUnsafe?.user;
+
+        if (user) {
+            document.getElementById('userPhoto').src = user.photo_url;
+            document.getElementById('username').textContent = '@' + (user.username || 'Без ника');
+            document.getElementById('fullname').textContent = (user.first_name || '') + ' ' + (user.last_name || '');
+            document.getElementById('telegramId').textContent = "ID: " + user.id;
+        }
+
+        fetch('/miniapp/profile/data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    initData: tg.initData
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                let html = '';
+                switch (data.status) {
+                    case 'trial':
+                        html =
+                            `<h3>${window.i18n.trial}</h3><p>${window.i18n.trial_until.replace(':date', data.trial_ends_at)}</p>`;
+                        break;
+                    case 'active':
+                        html =
+                            `<h3>${window.i18n.active}</h3><p>${window.i18n.active_until.replace(':date', data.subscription_ends_at)}</p>`;
+                        break;
+                    case 'expired':
+                        html =
+                            `<h3>${window.i18n.expired}</h3><a href="/miniapp/tarifs" class="pay-btn">${window.i18n.pay_again}</a>`;
+                        break;
+                    default:
+                        html =
+                            `<h3>${window.i18n.no_subscription}</h3><a href="/miniapp/tarifs" class="pay-btn">${window.i18n.pay}</a>`;
+                }
+                document.getElementById('subscription').innerHTML = html;
+
+                if (data.emptyPayments) {
+                    document.getElementById('payments').innerHTML = `<p class="message">${data.messagePayments}</p>`;
+                } else {
+                    document.getElementById('payments').innerHTML = data.payments.map(p => `
+                <div class="list-item">
+                    ID: ${p.inv_id} <span>${p.amount} (${p.status})</span>
+                </div>
+            `).join('');
+                }
+            });
+
+        document.getElementById("deleteUserBtn").addEventListener("click", function() {
+            Swal.fire({
+                title: window.i18n.delete_confirm,
+                text: window.i18n.delete_text,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: window.i18n.delete_yes,
+                cancelButtonText: window.i18n.delete_cancel
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch("/miniapp/profile/delete", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                initData: tg.initData
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: window.i18n.delete_success,
+                                    text: window.i18n.delete_success_text,
+                                    icon: "success",
+                                    confirmButtonText: window.i18n.ok
+                                }).then(() => {
+                                    location.href = "/miniapp";
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: window.i18n.delete_error,
+                                    text: data.message || window.i18n.delete_error_text,
+                                    icon: "error",
+                                    confirmButtonText: window.i18n.ok
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire({
+                                title: window.i18n.delete_unknown,
+                                text: window.i18n.delete_unknown_text,
+                                icon: "error",
+                                confirmButtonText: window.i18n.ok
+                            });
+                        });
+                }
+            });
+        });
     </script>
-    <script src="/js/profile.js"></script>
 </body>
 
 </html>
