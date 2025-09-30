@@ -11,4 +11,4 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/webhook', [WebhookController::class, 'webhookHandler']);
 
-Route::post('/robokassa/result', [RobokassaController::class, 'result'])->name('robokassa.result');
+Route::post('/success-payment', [RobokassaController::class, 'result'])->name('robokassa.result');
