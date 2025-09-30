@@ -43,10 +43,10 @@ Route::prefix('miniapp')->middleware([TelegramAuth::class, SetUserLocale::class]
     Route::get('/export/{format}', [ExportController::class, 'export'])->name('miniapp.export');
 });
 
-Route::get('/robokassa/success', [RobokassaController::class, 'success'])->name('robokassa.success');
-Route::get('/robokassa/fail', [RobokassaController::class, 'fail'])->name('robokassa.fail');
+Route::any('/success-payment', [RobokassaController::class, 'success'])->name('robokassa.success');
+Route::any('/fail-payment', [RobokassaController::class, 'fail'])->name('robokassa.fail');
 
-Route::post('/robokassa/enable-recurring', [RobokassaController::class, 'enableRecurring'])->name('robokassa.enable-recurring');
+Route::post('/enable-recurring', [RobokassaController::class, 'enableRecurring'])->name('robokassa.enable-recurring');
 
 Route::prefix('recurring')->group(function () {
     Route::post('/process', [RobokassaController::class, 'processRecurringPayments'])->name('recurring.process');
