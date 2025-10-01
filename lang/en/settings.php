@@ -30,4 +30,10 @@ return [
     'currency_changed_error' => 'Failed to change currency',
     'language_changed_success' => 'Language changed. Page will reload...',
     'language_changed_error' => 'Failed to change language',
+
+    'detected_success' => 'Your timezone has been successfully detected as :timezone (:offset).',
+    'detect_failed' => 'Failed to detect timezone',
+    'geolocation_error' => 'Geolocation error',
+    'geolocation_unsupported' => 'Geolocation is not supported by your device',
+    'detection_error' => 'Error detecting timezone'
 ];

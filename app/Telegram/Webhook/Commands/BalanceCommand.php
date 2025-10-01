@@ -15,7 +15,7 @@ class BalanceCommand extends Webhook
 
         $user = User::where('telegram_id', $userId)->first();
         if (!$user) {
-            Telegram::message($userId, '❗ Пользователь не найден', $this->message_id)->send();
+            Telegram::message($userId, trans('commands.balance.user_not_found'), $this->message_id)->send();
             return;
         }
 
@@ -26,7 +26,7 @@ class BalanceCommand extends Webhook
             ->get();
 
         if ($operations->isEmpty()) {
-            Telegram::message($userId, '❗ Нет операций за последний месяц', $this->message_id)->send();
+            Telegram::message($userId, trans('commands.balance.no_operations'), $this->message_id)->send();
             return;
         }
 
@@ -34,10 +34,15 @@ class BalanceCommand extends Webhook
         $expense = $operations->where('type', 'expense')->sum('amount');
         $balance = $income - $expense;
 
-        $message = "📊 <b>Баланс за последние 30 дней:</b>\n\n";
-        $message .= "📈 Доходы: <b>" . number_format($income, 2, '.', ' ') . "₸</b>\n";
-        $message .= "📉 Расходы: <b>" . number_format($expense, 2, '.', ' ') . "₸</b>\n";
-        $message .= "💰 Остаток: <b>" . number_format($balance, 2, '.', ' ') . "₸</b>";
+        $message = trans('commands.balance.title') . "\n\n";
+        $message .= trans('commands.balance.income', ['amount' => number_format($income, 2, '.', ' ')]) . "\n";
+        $message .= trans('commands.balance.expense', ['amount' => number_format($expense, 2, '.', ' ')]) . "\n";
+
+        if ($balance > 0) {
+            $message .= trans('commands.balance.balance_positive', ['amount' => number_format($balance, 2, '.', ' ')]);
+        } elseif ($balance < 0) {
+            $message .= trans('commands.balance.balance_negative', ['amount' => number_format(abs($balance), 2, '.', ' ')]);
+        }
 
         Telegram::message($userId, $message)->send();
     }

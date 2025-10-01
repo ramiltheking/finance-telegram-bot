@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
+use App\Models\TelegramPayment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,8 @@ class ProfileController extends Controller
 
         $userId = $user->telegram_id;
         $dbUser = User::where('telegram_id', $userId)->first();
-        $payments = Payment::where('user_id', $userId)->latest()->get();
+        // $payments = Payment::where('user_id', $userId)->latest()->get();
+        $payments = TelegramPayment::where('user_id', $userId)->latest()->get();
 
         return response()->json([
             'emptyPayments' => $payments->isEmpty(),

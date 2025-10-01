@@ -16,7 +16,7 @@ class EditCommand extends Webhook
         $args = explode(' ', $text);
 
         if (count($args) < 3) {
-            Telegram::message($userId, '❗ Неверный формат команды. Используйте /edit (номер) (сумма)', $this->message_id)->send();
+            Telegram::message($userId, trans('commands.edit.invalid_format'), $this->message_id)->send();
             return;
         }
 
@@ -24,13 +24,13 @@ class EditCommand extends Webhook
         $newAmount = (float)$args[2];
 
         if ($index <= 0 || $newAmount <= 0) {
-            Telegram::message($userId, '❗ Неверный формат команды. Используйте /edit (номер) (сумма)', $this->message_id)->send();
+            Telegram::message($userId, trans('commands.edit.invalid_params'), $this->message_id)->send();
             return;
         }
 
         $user = User::where('telegram_id', $userId)->first();
         if (!$user) {
-            Telegram::message($userId, '❗ Пользователь не найден', $this->message_id)->send();
+            Telegram::message($userId, trans('commands.edit.user_not_found'), $this->message_id)->send();
             return;
         }
 
@@ -41,13 +41,13 @@ class EditCommand extends Webhook
             ->get();
 
         if (!isset($operations[$index - 1])) {
-            Telegram::message($userId, "❗ Операция номер {$index} не найдена", $this->message_id)->send();
+            Telegram::message($userId, trans('commands.edit.operation_not_found', ['index' => $index]), $this->message_id)->send();
             return;
         }
 
         $operation = $operations[$index - 1];
         $operation->update(['amount' => $newAmount]);
 
-        Telegram::message($userId, "✅ Операция номер {$index} обновлена. Новая сумма: {$newAmount}")->send();
+        Telegram::message($userId, trans('commands.edit.success', ['index' => $index, 'amount' => $newAmount]))->send();
     }
 }

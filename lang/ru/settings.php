@@ -30,4 +30,10 @@ return [
     'currency_changed_error' => 'Не удалось изменить валюту',
     'language_changed_success' => 'Язык изменен. Страница будет перезагружена...',
     'language_changed_error' => 'Не удалось изменить язык',
+
+    'detected_success' => 'Ваш часовой пояс успешно определен на :timezone (:offset).',
+    'detect_failed' => 'Не удалось определить часовой пояс',
+    'geolocation_error' => 'Ошибка получения геолокации',
+    'geolocation_unsupported' => 'Геолокация не поддерживается вашим устройством',
+    'detection_error' => 'Ошибка при определении часового пояса'
 ];

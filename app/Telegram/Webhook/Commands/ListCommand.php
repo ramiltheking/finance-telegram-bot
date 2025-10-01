@@ -15,8 +15,9 @@ class ListCommand extends Webhook
         $userId = $this->chat_id;
 
         $user = User::where('telegram_id', $userId)->first();
+
         if (!$user) {
-            Telegram::message($userId, '❗ Пользователь не найден', $this->message_id)->send();
+            Telegram::message($userId, trans('commands.list.user_not_found'), $this->message_id)->send();
             return;
         }
 
@@ -27,33 +28,38 @@ class ListCommand extends Webhook
             ->get();
 
         if ($operations->isEmpty()) {
-            Telegram::message($userId, '❗ Нет операций за последнюю неделю', $this->message_id)->send();
+            Telegram::message($userId, trans('commands.list.no_operations'), $this->message_id)->send();
             return;
         }
 
-        $categoryMapById   = Category::pluck('name_ru', 'id')->toArray();
-        $categoryMapByName = Category::pluck('name_ru', 'name_en')->toArray();
+        $userSettings = $user->settings;
+        $userLang = $userSettings?->language ?? 'ru';
 
-        $message = "📋 Список операций за последнюю неделю:\n\n";
+        $categoryField = $userLang === 'ru' ? 'name_ru' : 'name_en';
+        $categoryMap = Category::pluck($categoryField, 'name_en')->toArray();
+
+        $dateFormat = $userLang === 'ru' ? 'd.m.Y' : 'Y-m-d';
+
+        $message = trans('commands.list.title') . "\n\n";
 
         foreach ($operations as $index => $op) {
-            $category = $categoryMapById[$op->category]
-                ?? $categoryMapByName[$op->category]
-                ?? $op->category;
+            $category = $categoryMap[$op->category] ?? trans('commands.list.no_category');
+            $typeIcon = $op->type === 'income'
+                ? trans('commands.list.income_icon')
+                : trans('commands.list.expense_icon');
 
-            $message .= sprintf(
-                "%d) %s %s (%s), сумма: %s, дата: %s\n",
-                $index + 1,
-                $op->type === 'income' ? '➕' : '➖',
-                $category ?? 'Без категории',
-                $op->currency,
-                number_format($op->amount, 2, '.', ' '),
-                $op->occurred_at->format('d.m.Y')
-            );
+            $message .= trans('commands.list.operation_format', [
+                'index' => $index + 1,
+                'type' => $typeIcon,
+                'category' => $category,
+                'currency' => $op->currency,
+                'amount' => number_format($op->amount, 2, '.', ' '),
+                'date' => $op->occurred_at->format($dateFormat)
+            ]) . "\n";
         }
 
-        $message .= "\nЧтобы удалить запись: /delete (номер)\n";
-        $message .= "Чтобы редактировать запись: /edit (номер) (сумма)\n";
+        $message .= "\n" . trans('commands.list.delete_hint') . "\n";
+        $message .= trans('commands.list.edit_hint');
 
         Telegram::message($userId, $message)->send();
     }

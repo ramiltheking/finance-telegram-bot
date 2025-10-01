@@ -533,19 +533,19 @@
                                 `${data.timezone} (${offsetStr})`;
 
                             await saveSetting('timezone', data.timezone);
-                            showToast(`Ваш часовой пояс упешно определен на ${data.timezone} (${offsetStr}).`);
+                            showToast(window.i18n.detected_success.replace(':timezone', data.timezone).replace(':offset', offsetStr));
                         } else {
-                            showToast("Не удалось определить часовой пояс");
+                            showToast(window.i18n.detect_failed);
                         }
                     } catch (error) {
                         console.error('Error detecting timezone:', error);
-                        showToast("Ошибка при определении часового пояса", "error");
+                        showToast(window.i18n.detection_error, "error");
                     }
                 }, (error) => {
-                    showToast("Ошибка получения геолокации", "error");
+                    showToast(window.i18n.geolocation_error, "error");
                 });
             } else {
-                showToast("Геолокация не поддерживается вашим устройством", "error");
+                showToast(window.i18n.geolocation_unsupported, "error");
             }
         });
 
@@ -696,9 +696,9 @@
                     Swal.fire({
                         title: 'Управление подпиской',
                         html: `
-                    <p>Вы можете отключить автопродление в любой момент.</p>
-                    <p>При отключении автопродления подписка будет активна до конца оплаченного периода.</p>
-                `,
+                            <p>Вы можете отключить автопродление в любой момент.</p>
+                            <p>При отключении автопродления подписка будет активна до конца оплаченного периода.</p>
+                        `,
                         icon: 'info',
                         showCancelButton: true,
                         confirmButtonText: 'Отключить автопродление',

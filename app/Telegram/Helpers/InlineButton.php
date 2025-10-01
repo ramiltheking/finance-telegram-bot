@@ -39,4 +39,20 @@ class InlineButton
             ],
         ];
     }
+
+    public static function pay(mixed $text, string $payload, int $row = 1)
+    {
+        self::$buttons['inline_keyboard'][$row-1][] = [
+            'text' => $text,
+            'pay' => true,
+        ];
+    }
+
+    public static function invoice(mixed $text, string $invoicePayload, int $row = 1)
+    {
+        self::$buttons['inline_keyboard'][$row-1][] = [
+            'text' => $text,
+            'pay' => true,
+        ];
+    }
 }

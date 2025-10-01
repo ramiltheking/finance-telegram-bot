@@ -260,7 +260,7 @@
     </div>
 
     <script>
-        const botUsername = "VoiceFinanceTestBot";
+        const botUsername = "{{ env('TELEGRAM_BOT_USERNAME') }}";
         let timeLeft = 10;
         const countdownElement = document.getElementById('countdown');
 

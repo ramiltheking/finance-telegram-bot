@@ -5,12 +5,14 @@ namespace App\Telegram\Bot;
 class Factory
 {
     private Message $message;
+    private Invoice $invoice;
     private File $file;
 
     public function __construct()
     {
         $this->message = new Message();
         $this->file = new File();
+        $this->invoice = new Invoice();
     }
 
     public function __call($name, $arguments)

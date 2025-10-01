@@ -4,29 +4,38 @@ namespace App\Telegram\Webhook\Actions;
 
 use App\Facades\Telegram;
 use App\Telegram\Webhook\Webhook;
+use App\Models\User;
 
 class WorkInfo extends Webhook
 {
-    public function run() {
-        $text = <<<EOT
-        🤖 <b>Финансовый помощник</b> — это умный бот для учёта ваших доходов и расходов.
+    public function run()
+    {
+        $user = User::where('telegram_id', $this->chat_id)->first();
+        $userLang = $user?->settings?->language ?? 'ru';
 
-        📌 Как он работает:
-        1️⃣ Нажмите <b>Старт</b>
-        2️⃣ Общайтесь с ботом — можно писать или отправлять голосовые (до 20 сек)
-        3️⃣ Просто напишите: "Получил зарплату 100000 тенге" — бот сам внесёт данные
-        4️⃣ AI обработает всё автоматически и сохранит в память
-        5️⃣ Вы получите <b>наглядную аналитику</b> своих финансов
-
-        📊 <b>Доступные команды:</b>
-        - /remind — создать напоминание
-        - /report — получить отчёт
-        - /balance — получение баланса
-        - /delete_last — удаление последней записи
-
-        🧠 Бот использует искусственный интеллект: помогает, подсказывает и ведёт учёт в диалоге с вами. \n
-        🤖 Просто начините пользоваться и все станет легко и понятно
-        EOT;
+        $text = $this->generateWorkInfoText($userLang);
         Telegram::message($this->chat_id, $text)->send();
+    }
+
+    private function generateWorkInfoText($lang = 'ru')
+    {
+        return
+            trans('actions.work_info.title', [], $lang) . "\n\n" .
+            trans('actions.work_info.how_it_works', [], $lang) . "\n" .
+            trans('actions.work_info.step_1', [], $lang) . "\n" .
+            trans('actions.work_info.step_2', [], $lang) . "\n" .
+            trans('actions.work_info.step_3', [], $lang) . "\n" .
+            trans('actions.work_info.step_4', [], $lang) . "\n" .
+            trans('actions.work_info.step_5', [], $lang) . "\n\n" .
+            trans('actions.work_info.available_commands', [], $lang) . "\n" .
+            trans('actions.work_info.command_remind', [], $lang) . "\n" .
+            trans('actions.work_info.command_report', [], $lang) . "\n" .
+            trans('actions.work_info.command_balance', [], $lang) . "\n" .
+            trans('actions.work_info.command_delete_last', [], $lang) . "\n" .
+            trans('actions.work_info.command_list', [], $lang) . "\n" .
+            trans('actions.work_info.command_edit', [], $lang) . "\n" .
+            trans('actions.work_info.command_fullreport', [], $lang) . "\n\n" .
+            trans('actions.work_info.ai_description', [], $lang) . "\n\n" .
+            trans('actions.work_info.final_note', [], $lang);
     }
 }

@@ -292,10 +292,10 @@
                     document.getElementById('payments').innerHTML = `<p class="message">${data.messagePayments}</p>`;
                 } else {
                     document.getElementById('payments').innerHTML = data.payments.map(p => `
-                <div class="list-item">
-                    ID: ${p.inv_id} <span>${p.amount} (${p.status})</span>
-                </div>
-            `).join('');
+                        <div class="list-item">
+                            ID: ${p.telegram_payment_charge_id ? `${p.telegram_payment_charge_id.slice(0, 5)}...${p.telegram_payment_charge_id.slice(-3)}` : 'N/A'} <span>${p.amount} ${p.currency == 'XTR' ? '⭐' : p.currency} (${p.status})</span>
+                        </div>
+                    `).join('');
                 }
             });
 

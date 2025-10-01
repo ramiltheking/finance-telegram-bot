@@ -5,6 +5,7 @@ namespace App\Facades;
 use App\Telegram\Bot;
 use App\Telegram\Bot\Message;
 use App\Telegram\Bot\File;
+use App\Telegram\Bot\Invoice;
 use Illuminate\Support\Facades\Facade;
 
 /**
@@ -14,7 +15,12 @@ use Illuminate\Support\Facades\Facade;
  * @method static File document(mixed $chat_id, $file, string $filename, $reply_id = null)
  * @method static File photo(mixed $chat_id, $file, string $filename, $reply_id = null)
  * @method static File groupPhoto(mixed $chat_id, array $file_url, $reply_id = null)
+ * @method Invoice createInvoiceLink(string $title, string $description, string $payload, array $prices, string $period = "2592000")
+ * @method Invoice createInvoice($chatId, string $title, string $description, string $payload, array $prices, string $currency = 'XTR')
  * @method Bot send(string $name)
+ * @method Bot answerPreCheckoutQuery(string $preCheckoutQueryId, bool $ok, string $errorMessage = null)
+ * @method Bot answerShippingQuery(string $shippingQueryId, bool $ok, array $shippingOptions = null, string $errorMessage = null)
+ * @method Bot sendRequest($method, $data)
  */
 
 class Telegram extends Facade
