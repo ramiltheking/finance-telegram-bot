@@ -23,4 +23,20 @@ class Category extends Model
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
+
+    public function operations()
+    {
+        return $this->hasMany(Operation::class, 'category', 'slug')
+            ->where('category_type', 'system');
+    }
+
+    public function scopeType($query, $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    public function scopeRoot($query)
+    {
+        return $query->whereNull('parent_id');
+    }
 }

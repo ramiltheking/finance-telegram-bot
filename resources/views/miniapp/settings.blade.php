@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="/css/settings.css">
     <style>
         :root {
@@ -319,17 +320,17 @@
             background: rgba(28, 200, 138, 0.9);
             color: #fff;
             border-radius: 12px;
-            box-shadow: 0 4px 12px #00000026;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             padding: 12px 16px;
             margin-top: 10px;
             margin-right: 10px;
             font-size: 14px;
             backdrop-filter: blur(6px);
-            border: 1px solid #ffffff33;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .app-toast.warning {
-            background: #ff6b6be6 !important;
+        .warning {
+            background: #ff9c47;
         }
 
         .app-toast-title {
@@ -343,6 +344,290 @@
             opacity: 0.8;
             height: 3px;
             border-radius: 0 0 12px 12px;
+        }
+
+        .categories-section {
+            margin-bottom: 25px;
+        }
+
+        .categories-section h4 {
+            margin: 0 0 12px 0;
+            color: var(--dark);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .category-item {
+            gap: 10px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: var(--light);
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s ease;
+        }
+
+        .category-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 6px rgba(78, 115, 223, 0.1);
+        }
+
+        .category-info {
+            flex: 1;
+        }
+
+        .category-name {
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 4px;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .category-description {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-edit,
+        .btn-delete {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-edit {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #3a5fcd;
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+
+        .add-category-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .add-category-btn:hover {
+            background: #17a673;
+        }
+
+        .empty-categories {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--dark);
+            font-style: italic;
+        }
+
+        .empty-categories p {
+            margin: 0;
+            opacity: 0.7;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal h3 {
+            margin: 0 0 20px 0;
+            color: var(--primary);
+            word-break: break-word;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-select,
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+            background: white;
+            color: var(--dark);
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        .form-select:focus,
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            outline: 2px solid transparent;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 60px;
+            max-height: 200px;
+        }
+
+        .form-input:invalid,
+        .form-textarea:invalid {
+            border-color: var(--danger);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #3a5fcd;
+        }
+
+        .btn-cancel {
+            background: var(--light);
+            color: var(--dark);
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-cancel:hover {
+            background: #e9ecef;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .category-name,
+        .category-description,
+        .modal h3 {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .modal-overlay {
+            rel: "noopener noreferrer";
+        }
+
+        .modal {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .form-input,
+        .form-textarea {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+
+        .form-input[autocomplete="off"] {
+            -webkit-autocomplete: off;
+            -moz-autocomplete: off;
+            -ms-autocomplete: off;
+            autocomplete: off;
         }
     </style>
     <script src="/js/checkFromTelegram.js"></script>
@@ -419,6 +704,64 @@
             </div>
         </div>
 
+        <div class="card custom-categories">
+            <h3>🏷️ Мои категории</h3>
+
+            <div class="categories-section">
+                <h4>💰 Доходы</h4>
+                <div class="category-list" id="incomeCategories">
+                    <div class="empty-categories">
+                        <p>Пока нет категорий доходов</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="categories-section">
+                <h4>➖ Расходы</h4>
+                <div class="category-list" id="expenseCategories">
+                    <div class="empty-categories">
+                        <p>Пока нет категорий расходов</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="add-category-btn" onclick="showCategoryModal()">
+                <span>+</span> Добавить категорию
+            </button>
+        </div>
+
+        <div id="categoryModal" class="modal-overlay hidden">
+            <div class="modal">
+                <h3 id="modalTitle">Добавить категорию</h3>
+
+                <div class="form-group">
+                    <label for="categoryType">Тип категории</label>
+                    <select id="categoryType" class="form-select">
+                        <option value="EXPENSE">➖ Расход</option>
+                        <option value="INCOME">💰 Доход</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoryName">Название категории *</label>
+                    <input type="text" id="categoryName" class="form-input" placeholder="Введите название категории"
+                        maxlength="50" required>
+                    <small style="color: #666; font-size: 12px;">Обязательное поле, максимум 50 символов</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoryTitle">Описание категории</label>
+                    <textarea id="categoryTitle" class="form-textarea" placeholder="Описание категории" maxlength="255" rows="3"></textarea>
+                    <small style="color: #666; font-size: 12px;">Необязательное поле, максимум 255 символов</small>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-save" onclick="saveCategory()">💾 Сохранить</button>
+                    <button class="btn-cancel" onclick="closeCategoryModal()">❌ Отмена</button>
+                </div>
+            </div>
+        </div>
+
         <div class="card timezone-card">
             <h3>{{ __('settings.timezone') }}</h3>
             <strong id="userTimezone"></strong><br><br>
@@ -451,6 +794,10 @@
 
         const tg = window.Telegram.WebApp;
         tg.expand();
+
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primaryColor = rootStyles.getPropertyValue('--primary').trim();
+        const dangerColor = rootStyles.getPropertyValue('--danger').trim();
 
         function getUtcOffset() {
             const offsetMinutes = new Date().getTimezoneOffset();
@@ -504,6 +851,409 @@
             });
         }
 
+        function sanitizeHTML(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML;
+        }
+
+        function validateInput(input, maxLength = 255, allowEmpty = false) {
+            if (!input && !allowEmpty) return false;
+            if (input === null || input === undefined) return allowEmpty;
+
+            const str = String(input).trim();
+            if (!allowEmpty && str.length === 0) return false;
+            if (str.length > maxLength) return false;
+
+            const dangerousPatterns = [
+                /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+                /javascript:/gi,
+                /vbscript:/gi,
+                /on\w+\s*=/gi,
+                /expression\s*\(/gi,
+                /url\s*\(/gi
+            ];
+
+            return !dangerousPatterns.some(pattern => pattern.test(str));
+        }
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        let categories = [];
+        let editingCategoryId = null;
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/miniapp/categories', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    categories = Array.isArray(data.categories) ? data.categories : [];
+                    renderCategories();
+                } else {
+                    console.error('Error loading categories:', data.error);
+                    showToast('Ошибка загрузки категорий', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                showToast('Ошибка загрузки категорий', 'error');
+            }
+        }
+
+        function renderCategories() {
+            const incomeContainer = document.getElementById('incomeCategories');
+            const expenseContainer = document.getElementById('expenseCategories');
+
+            if (!incomeContainer || !expenseContainer) {
+                console.error('Category containers not found');
+                return;
+            }
+
+            const incomeCategories = categories.filter(cat => cat && cat.type === 'INCOME');
+            const expenseCategories = categories.filter(cat => cat && cat.type === 'EXPENSE');
+
+            if (incomeCategories.length > 0) {
+                incomeContainer.innerHTML = incomeCategories.map(category => {
+                    if (!category || !category.id) return '';
+
+                    const safeName = sanitizeHTML(category.name);
+                    const safeDescription = category.title ? sanitizeHTML(category.title) : '';
+                    const safeId = escapeHtml(category.id.toString());
+
+                    return `
+                        <div class="category-item" data-category-id="${safeId}">
+                            <div class="category-info">
+                                <div class="category-name">${safeName}</div>
+                                ${safeDescription ? `<div class="category-description">${safeDescription}</div>` : ''}
+                            </div>
+                            <div class="category-actions">
+                                <button class="btn-edit" onclick="editCategory(${safeId})" aria-label="Редактировать категорию">✏️</button>
+                                <button class="btn-delete" onclick="deleteCategory(${safeId})" aria-label="Удалить категорию">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                incomeContainer.innerHTML = '<div class="empty-categories"><p>Пока нет категорий доходов</p></div>';
+            }
+
+            if (expenseCategories.length > 0) {
+                expenseContainer.innerHTML = expenseCategories.map(category => {
+                    if (!category || !category.id) return '';
+
+                    const safeName = sanitizeHTML(category.name);
+                    const safeDescription = category.title ? sanitizeHTML(category.title) : '';
+                    const safeId = escapeHtml(category.id.toString());
+
+                    return `
+                <div class="category-item" data-category-id="${safeId}">
+                    <div class="category-info">
+                        <div class="category-name">${safeName}</div>
+                        ${safeDescription ? `<div class="category-description">${safeDescription}</div>` : ''}
+                    </div>
+                    <div class="category-actions">
+                        <button class="btn-edit" onclick="editCategory(${safeId})" aria-label="Редактировать категорию">✏️</button>
+                        <button class="btn-delete" onclick="deleteCategory(${safeId})" aria-label="Удалить категорию">🗑️</button>
+                    </div>
+                </div>
+            `;
+                }).join('');
+            } else {
+                expenseContainer.innerHTML = '<div class="empty-categories"><p>Пока нет категорий расходов</p></div>';
+            }
+        }
+
+        function showCategoryModal(category = null) {
+            const modal = document.getElementById('categoryModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const typeSelect = document.getElementById('categoryType');
+            const nameInput = document.getElementById('categoryName');
+            const titleInput = document.getElementById('categoryTitle');
+
+            if (!modal || !modalTitle || !typeSelect || !nameInput || !titleInput) {
+                console.error('Modal elements not found');
+                return;
+            }
+
+            nameInput.value = '';
+            titleInput.value = '';
+            typeSelect.value = 'EXPENSE';
+
+            if (category && category.id) {
+                modalTitle.textContent = '✏️ Редактировать категорию';
+                typeSelect.value = validateInput(category.type) ? category.type : 'EXPENSE';
+                nameInput.value = validateInput(category.name, 50) ? category.name : '';
+                titleInput.value = validateInput(category.title, 255, true) ? category.title : '';
+                editingCategoryId = parseInt(category.id);
+
+                if (isNaN(editingCategoryId)) {
+                    console.error('Invalid category ID');
+                    editingCategoryId = null;
+                    return;
+                }
+            } else {
+                modalTitle.textContent = '➕ Добавить категорию';
+                editingCategoryId = null;
+            }
+
+            modal.classList.remove('hidden');
+
+            setTimeout(() => {
+                if (nameInput && nameInput.focus) {
+                    nameInput.focus();
+                }
+            }, 100);
+        }
+
+        function closeCategoryModal() {
+            const modal = document.getElementById('categoryModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            editingCategoryId = null;
+        }
+
+        async function saveCategory() {
+            const typeSelect = document.getElementById('categoryType');
+            const nameInput = document.getElementById('categoryName');
+            const titleInput = document.getElementById('categoryTitle');
+
+            if (!typeSelect || !nameInput || !titleInput) {
+                showToast('Ошибка: элементы формы не найдены', 'error');
+                return;
+            }
+
+            const type = typeSelect.value;
+            const name = nameInput.value.trim();
+            const title = titleInput.value.trim();
+
+            if (!['INCOME', 'EXPENSE'].includes(type)) {
+                showToast('Некорректный тип категории', 'error');
+                return;
+            }
+
+            if (!validateInput(name, 50)) {
+                showToast('Некорректное название категории', 'error');
+                return;
+            }
+
+            if (title && !validateInput(title, 255, true)) {
+                showToast('Некорректное описание категории', 'error');
+                return;
+            }
+
+            try {
+                const url = editingCategoryId && Number.isInteger(editingCategoryId) ?
+                    `/miniapp/categories/${editingCategoryId}` :
+                    '/miniapp/categories';
+
+                const method = editingCategoryId ? 'PUT' : 'POST';
+
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        ...(csrfToken && {
+                            'X-CSRF-TOKEN': csrfToken
+                        })
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        type: type,
+                        name: name,
+                        title: title || null
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(editingCategoryId ? 'Категория обновлена' : 'Категория добавлена');
+                    closeCategoryModal();
+                    await loadCategories();
+                } else {
+                    if (data.error === 'category_exists') {
+                        showToast('Категория с таким названием уже существует', 'error');
+                    } else {
+                        showToast(data.error || 'Ошибка сохранения категории', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving category:', error);
+                showToast('Ошибка сохранения категории', 'error');
+            }
+        }
+
+        function editCategory(categoryId) {
+            if (!categoryId || isNaN(parseInt(categoryId))) {
+                console.error('Invalid category ID');
+                return;
+            }
+
+            const category = categories.find(cat => cat && cat.id === parseInt(categoryId));
+            if (category) {
+                showCategoryModal(category);
+            } else {
+                showToast('Категория не найдена', 'error');
+            }
+        }
+
+        async function deleteCategory(categoryId) {
+            if (!categoryId || isNaN(parseInt(categoryId))) {
+                console.error('Invalid category ID');
+                return;
+            }
+
+            const category = categories.find(cat => cat && cat.id === parseInt(categoryId));
+            if (!category) {
+                showToast('Категория не найдена', 'error');
+                return;
+            }
+
+            const safeName = sanitizeHTML(category.name);
+
+            const result = await Swal.fire({
+                title: 'Удалить категорию?',
+                html: `Категория <strong>"${safeName}"</strong> будет удалена. Это действие нельзя отменить.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Удалить',
+                cancelButtonText: 'Отмена',
+                confirmButtonColor: dangerColor,
+                cancelButtonColor: primaryColor,
+                customClass: {
+                    htmlContainer: 'swal-html-container'
+                }
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                    const response = await fetch(`/miniapp/categories/${categoryId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            ...(csrfToken && {
+                                'X-CSRF-TOKEN': csrfToken
+                            })
+                        },
+                        credentials: 'same-origin'
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        if (data.error === 'category_in_use') {
+                            Swal.fire({
+                                title: 'Невозможно удалить категорию',
+                                html: `
+                            <div style="text-align: left;">
+                                <p>Категория <strong>"${safeName}"</strong> используется в существующих операциях и не может быть удалена.</p>
+                                <p><strong>Что можно сделать:</strong></p>
+                                <ul style="margin: 10px 0; padding-left: 20px;">
+                                    <li>Удалите или измените операции с этой категорией</li>
+                                    <li>Используйте команду /list для просмотра операций</li>
+                                </ul>
+                            </div>
+                        `,
+                                icon: 'error',
+                                confirmButtonText: 'Понятно',
+                                width: 500
+                            });
+                        } else {
+                            throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                        }
+                        return;
+                    }
+
+                    if (data.success) {
+                        showToast('Категория удалена');
+                        await loadCategories();
+                    } else {
+                        showToast(data.error || 'Ошибка удаления категории', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error deleting category:', error);
+                    showToast('Ошибка удаления категории', 'error');
+                }
+            }
+        }
+
+        function setupEventListeners() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeCategoryModal();
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (e.target.id === 'categoryModal') {
+                    closeCategoryModal();
+                }
+            });
+
+            let isProcessing = false;
+
+            const originalSaveCategory = window.saveCategory;
+            window.saveCategory = async function() {
+                if (isProcessing) return;
+
+                isProcessing = true;
+                try {
+                    await originalSaveCategory();
+                } finally {
+                    setTimeout(() => {
+                        isProcessing = false;
+                    }, 1000);
+                }
+            };
+
+            const originalDeleteCategory = window.deleteCategory;
+            window.deleteCategory = async function(categoryId) {
+                if (isProcessing) return;
+
+                isProcessing = true;
+                try {
+                    await originalDeleteCategory(categoryId);
+                } finally {
+                    setTimeout(() => {
+                        isProcessing = false;
+                    }, 1000);
+                }
+            };
+        }
+
         document.getElementById('detectTimezone').addEventListener('click', () => {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -531,11 +1281,11 @@
                             const offsetStr = getUtcOffset();
                             document.getElementById('userTimezone').textContent =
                                 `${data.timezone} (${offsetStr})`;
-
                             await saveSetting('timezone', data.timezone);
-                            showToast(window.i18n.detected_success.replace(':timezone', data.timezone).replace(':offset', offsetStr));
+                            showToast(window.i18n.detected_success.replace(':timezone', data.timezone)
+                                .replace(':offset', offsetStr));
                         } else {
-                            showToast(window.i18n.detect_failed);
+                            showToast(window.i18n.detect_failed, "error");
                         }
                     } catch (error) {
                         console.error('Error detecting timezone:', error);
@@ -676,145 +1426,161 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const settingsData = window.userSettings;
-
-            if (window.subscriptionInfo) {
-                updateSubscriptionInfo(window.subscriptionInfo);
-            } else {
-                loadSubscriptionInfo();
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (typeof fetch === 'undefined') {
+                console.error('Fetch API is not supported');
+                return;
             }
 
-            const recurringToggle = document.getElementById('recurringToggle');
-            recurringToggle.addEventListener('change', (e) => {
-                saveRecurringSetting(e.target.checked);
-            });
+            try {
+                const settingsData = window.userSettings;
 
-            const manageBtn = document.getElementById('manageSubscription');
-            if (manageBtn) {
-                manageBtn.addEventListener('click', () => {
-                    Swal.fire({
-                        title: 'Управление подпиской',
-                        html: `
+                await loadCategories();
+                setupEventListeners();
+
+                if (window.subscriptionInfo) {
+                    updateSubscriptionInfo(window.subscriptionInfo);
+                } else {
+                    await loadSubscriptionInfo();
+                }
+
+                const recurringToggle = document.getElementById('recurringToggle');
+                recurringToggle.addEventListener('change', (e) => {
+                    saveRecurringSetting(e.target.checked);
+                });
+
+                const manageBtn = document.getElementById('manageSubscription');
+                if (manageBtn) {
+                    manageBtn.addEventListener('click', () => {
+                        Swal.fire({
+                            title: 'Управление подпиской',
+                            html: `
                             <p>Вы можете отключить автопродление в любой момент.</p>
                             <p>При отключении автопродления подписка будет активна до конца оплаченного периода.</p>
                         `,
-                        icon: 'info',
-                        showCancelButton: true,
-                        confirmButtonText: 'Отключить автопродление',
-                        cancelButtonText: 'Отмена'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            saveRecurringSetting(false);
-                        }
+                            icon: 'info',
+                            showCancelButton: true,
+                            confirmButtonText: 'Отключить автопродление',
+                            cancelButtonText: 'Отмена'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                saveRecurringSetting(false);
+                            }
+                        });
                     });
-                });
-            }
+                }
 
-            const currencyCard = document.querySelector('.currency-card');
-            if (currencyCard) {
-                const currencyButtons = currencyCard.querySelectorAll('.buttons__group button');
-                currencyButtons.forEach(btn => {
-                    if (btn.dataset.currency === settingsData.currency) {
-                        btn.classList.add('active');
-                    }
-                    btn.addEventListener('click', async () => {
-                        try {
-                            await saveSetting('currency', btn.dataset.currency);
-                            currencyButtons.forEach(b => b.classList.remove('active'));
+                const currencyCard = document.querySelector('.currency-card');
+                if (currencyCard) {
+                    const currencyButtons = currencyCard.querySelectorAll('.buttons__group button');
+                    currencyButtons.forEach(btn => {
+                        if (btn.dataset.currency === settingsData.currency) {
                             btn.classList.add('active');
-
-                            showToast(window.i18n.currency_changed_success);
-                        } catch (error) {
-                            console.error('Error saving currency:', error);
-                            showToast(window.i18n.currency_changed_error, 'error');
                         }
-                    });
-                });
-            }
+                        btn.addEventListener('click', async () => {
+                            try {
+                                await saveSetting('currency', btn.dataset.currency);
+                                currencyButtons.forEach(b => b.classList.remove('active'));
+                                btn.classList.add('active');
 
-            const languageCard = document.querySelector('.language-card');
-            if (languageCard) {
-                const languageButtons = languageCard.querySelectorAll('.buttons__group button');
-                languageButtons.forEach(btn => {
-                    if (btn.dataset.lang === settingsData.language) {
-                        btn.classList.add('active');
-                    }
-                    btn.addEventListener('click', async () => {
-                        try {
-                            await saveSetting('language', btn.dataset.lang);
-                            languageButtons.forEach(b => b.classList.remove('active'));
+                                showToast(window.i18n.currency_changed_success);
+                            } catch (error) {
+                                console.error('Error saving currency:', error);
+                                showToast(window.i18n.currency_changed_error, 'error');
+                            }
+                        });
+                    });
+                }
+
+                const languageCard = document.querySelector('.language-card');
+                if (languageCard) {
+                    const languageButtons = languageCard.querySelectorAll('.buttons__group button');
+                    languageButtons.forEach(btn => {
+                        if (btn.dataset.lang === settingsData.language) {
                             btn.classList.add('active');
-
-                            showToast(window.i18n.language_changed_success);
-                            setTimeout(() => {
-                                location.reload();
-                            }, 3000);
-                        } catch (error) {
-                            console.error('Error saving language:', error);
-                            showToast(window.i18n.language_changed_error, 'error');
                         }
+                        btn.addEventListener('click', async () => {
+                            try {
+                                await saveSetting('language', btn.dataset.lang);
+                                languageButtons.forEach(b => b.classList.remove('active'));
+                                btn.classList.add('active');
+
+                                showToast(window.i18n.language_changed_success);
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 3000);
+                            } catch (error) {
+                                console.error('Error saving language:', error);
+                                showToast(window.i18n.language_changed_error, 'error');
+                            }
+                        });
                     });
-                });
-            }
+                }
 
-            if (settingsData.timezone) {
-                document.getElementById('userTimezone').textContent = settingsData.timezone;
-            }
+                if (settingsData.timezone) {
+                    document.getElementById('userTimezone').textContent = settingsData.timezone;
+                }
 
-            const toggle = document.getElementById('reminderToggle');
-            const timeSettings = document.getElementById('reminderTime');
-            const hourSelect = document.getElementById('reminderHour');
-            const minuteSelect = document.getElementById('reminderMinute');
+                const toggle = document.getElementById('reminderToggle');
+                const timeSettings = document.getElementById('reminderTime');
+                const hourSelect = document.getElementById('reminderHour');
+                const minuteSelect = document.getElementById('reminderMinute');
 
-            for (let h = 0; h < 24; h++) {
-                const opt = document.createElement('option');
-                opt.value = h;
-                opt.textContent = h.toString().padStart(2, '0');
-                hourSelect.appendChild(opt);
-            }
+                for (let h = 0; h < 24; h++) {
+                    const opt = document.createElement('option');
+                    opt.value = h;
+                    opt.textContent = h.toString().padStart(2, '0');
+                    hourSelect.appendChild(opt);
+                }
 
-            for (let m = 0; m < 60; m += 5) {
-                const opt = document.createElement('option');
-                opt.value = m;
-                opt.textContent = m.toString().padStart(2, '0');
-                minuteSelect.appendChild(opt);
-            }
+                for (let m = 0; m < 60; m += 5) {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.textContent = m.toString().padStart(2, '0');
+                    minuteSelect.appendChild(opt);
+                }
 
-            toggle.checked = settingsData.reminders_enabled;
-            if (toggle.checked) {
-                timeSettings.classList.remove('hidden');
-            }
-            hourSelect.value = settingsData.reminder_hour ?? 22;
-            minuteSelect.value = settingsData.reminder_minute ?? 0;
+                toggle.checked = settingsData.reminders_enabled;
+                if (toggle.checked) {
+                    timeSettings.classList.remove('hidden');
+                }
+                hourSelect.value = settingsData.reminder_hour ?? 22;
+                minuteSelect.value = settingsData.reminder_minute ?? 0;
 
-            toggle.addEventListener('change', async (e) => {
-                timeSettings.classList.toggle('hidden', !e.target.checked);
-                try {
-                    await saveSetting('reminders_enabled', e.target.checked);
-                } catch (error) {
-                    console.error('Error saving reminder setting:', error);
-                    e.target.checked = !e.target.checked;
+                toggle.addEventListener('change', async (e) => {
                     timeSettings.classList.toggle('hidden', !e.target.checked);
-                }
-            });
+                    try {
+                        await saveSetting('reminders_enabled', e.target.checked);
+                    } catch (error) {
+                        console.error('Error saving reminder setting:', error);
+                        e.target.checked = !e.target.checked;
+                        timeSettings.classList.toggle('hidden', !e.target.checked);
+                    }
+                });
 
-            hourSelect.addEventListener('change', async (e) => {
-                try {
-                    await saveSetting('reminder_hour', parseInt(e.target.value));
-                } catch (error) {
-                    console.error('Error saving reminder hour:', error);
-                }
-            });
+                hourSelect.addEventListener('change', async (e) => {
+                    try {
+                        await saveSetting('reminder_hour', parseInt(e.target.value));
+                    } catch (error) {
+                        console.error('Error saving reminder hour:', error);
+                    }
+                });
 
-            minuteSelect.addEventListener('change', async (e) => {
-                try {
-                    await saveSetting('reminder_minute', parseInt(e.target.value));
-                } catch (error) {
-                    console.error('Error saving reminder minute:', error);
-                }
-            });
+                minuteSelect.addEventListener('change', async (e) => {
+                    try {
+                        await saveSetting('reminder_minute', parseInt(e.target.value));
+                    } catch (error) {
+                        console.error('Error saving reminder minute:', error);
+                    }
+                });
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
         });
+
+        Object.freeze(window.sanitizeHTML);
+        Object.freeze(window.validateInput);
+        Object.freeze(window.escapeHtml);
     </script>
 
 </body>

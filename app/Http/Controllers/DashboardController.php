@@ -9,10 +9,11 @@ use App\Services\UserService;
 use App\Models\Operation;
 use App\Models\Payment;
 use App\Models\Category;
+use App\Models\UserCategory;
 use App\Models\User;
 use Carbon\Carbon;
 
-class MiniAppController extends Controller
+class DashboardController extends Controller
 {
     public function dashboard(Request $request)
     {
@@ -37,23 +38,36 @@ class MiniAppController extends Controller
         $operations = Operation::where('user_id', $telegramId)
             ->where('occurred_at', '>=', $from)
             ->where('status', 'confirmed')
+            ->with(['categoryRelation'])
             ->orderByDesc('occurred_at')
             ->get();
 
         $locale = Auth::user()->settings?->language ?? 'ru';
 
-        $categoryMapById = Category::pluck('name_ru', 'id')->toArray();
-        $categoryMapByName = $locale === 'ru' ? Category::pluck('name_ru', 'name_en')->toArray() : Category::pluck('name_en', 'name_en')->toArray();
+        $systemCategories = Category::all()->keyBy('slug');
 
-        $categories = $operations->groupBy('category')->mapWithKeys(function ($ops, $category) use ($categoryMapById, $categoryMapByName) {
-            $translated = $categoryMapById[$category] ?? $categoryMapByName[$category] ?? $category;
-            return [$translated => $ops->sum('amount')];
-        });
+        $userCategories = UserCategory::where('user_id', $telegramId)
+            ->get()
+            ->keyBy('name');
 
-        $operations = $operations->map(function ($op) use ($categoryMapById, $categoryMapByName) {
-            $cat = $op->category;
-            $op->category = $categoryMapById[$cat] ?? $categoryMapByName[$cat] ?? $cat;
-            return $op;
+        $categories = [];
+        foreach ($operations as $operation) {
+            $categoryName = $this->getCategoryName($operation, $systemCategories, $userCategories, $locale);
+            if (!isset($categories[$categoryName])) {
+                $categories[$categoryName] = 0;
+            }
+            $categories[$categoryName] += $operation->amount;
+        }
+
+        $formattedOperations = $operations->take(10)->map(function ($operation) use ($systemCategories, $userCategories, $locale) {
+            return [
+                'type' => $operation->type,
+                'amount' => $operation->amount,
+                'currency' => $operation->currency,
+                'category' => $this->getCategoryName($operation, $systemCategories, $userCategories, $locale),
+                'description' => $operation->description,
+                'occurred_at' => $operation->occurred_at?->format('d.m.Y H:i'),
+            ];
         });
 
         $payments = Payment::where('user_id', $telegramId)->latest()->get();
@@ -93,10 +107,27 @@ class MiniAppController extends Controller
         return response()->json([
             'emptyOperations' => $operations->isEmpty(),
             'messageOperations' => $operations->isEmpty() ? __('dashboard.operations_not_found') : null,
-            'categories' => $operations->isEmpty() ? [] : $categories,
-            'operations' => $operations->take(10),
+            'categories' => $categories,
+            'operations' => $formattedOperations,
             'payments' => $payments->take(10),
             'subscription' => $subscription ?? ['status' => 'expired', 'message' => __('dashboard.pay_again')],
         ]);
+    }
+
+    private function getCategoryName(Operation $operation, $systemCategories, $userCategories, $locale)
+    {
+        if ($operation->category_type === 'system') {
+            $category = $systemCategories->get($operation->category);
+            if ($category) {
+                return $locale === 'ru' ? $category->name_ru : ($category->name_en ?? $category->name_ru);
+            }
+        } elseif ($operation->category_type === 'custom') {
+            $category = $userCategories->get($operation->category);
+            if ($category) {
+                return $category->name;
+            }
+        }
+
+        return $operation->category;
     }
 }

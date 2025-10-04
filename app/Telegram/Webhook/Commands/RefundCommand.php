@@ -15,7 +15,8 @@ class RefundCommand extends Webhook
         $messageFromDev = $this->request->input('message.from.id') == env('TELEGRAM_DEV_CHAT');
 
         if (!$messageFromDev) {
-            Telegram::message($this->chat_id, "Возврат средств можно запросить через поддержку бота. Напиши нам с прозьбой возврата и опишите причину с приложенным счетом оплаты транзакции.")->send();
+            $message = trans('commands.refund.only_for_support');
+            Telegram::message($this->chat_id, $message)->send();
             return;
         }
 
@@ -36,12 +37,16 @@ class RefundCommand extends Webhook
                 ->first();
 
             if (!$payment) {
-                Telegram::message($this->chat_id, "❌ Платеж не найден.\nUser ID: {$params['user_id']}\nCharge ID: {$params['charge_id']}")->send();
+                $message = trans('commands.refund.payment_not_found', [
+                    'user_id' => $params['user_id'],
+                    'charge_id' => $params['charge_id']
+                ]);
+                Telegram::message($this->chat_id, $message)->send();
                 return;
             }
 
             if ($payment->status === 'refunded') {
-                Telegram::message($this->chat_id, "⚠️ Этот платеж уже был возвращен ранее.")->send();
+                Telegram::message($this->chat_id, trans('commands.refund.already_refunded'))->send();
                 return;
             }
 
@@ -62,30 +67,38 @@ class RefundCommand extends Webhook
                     'charge_id' => $params['charge_id']
                 ]);
 
-                $message = "✅ Платеж успешно возвращен!\n\n";
-                $message .= "💳 Сумма: {$payment->amount} {$payment->currency}\n";
-                $message .= "👤 Пользователь: {$user->first_name}";
-                $message .= $user->username ? " (@{$user->username})" : "";
-                $message .= "\n🆔 Charge ID: {$params['charge_id']}";
+                $message = trans('commands.refund.success_message') . "\n\n";
+                $message .= trans('commands.refund.amount', [
+                    'amount' => $payment->amount,
+                    'currency' => $payment->currency
+                ]) . "\n";
+                $message .= trans('commands.refund.user', [
+                    'name' => $user->first_name,
+                    'username' => $user->username ? " (@{$user->username})" : ""
+                ]);
+                $message .= "\n" . trans('commands.refund.charge_id', ['charge_id' => $params['charge_id']]);
 
                 Telegram::message($this->chat_id, $message)->send();
 
-                Telegram::message($user->telegram_id, "💰 Ваш платеж был возвращен. Подписка деактивирована.")->send();
+                $userMessage = trans('commands.refund.user_notification');
+                Telegram::message($user->telegram_id, $userMessage)->send();
             } else {
-                $errorMessage = $response['description'] ?? 'Неизвестная ошибка';
+                $errorMessage = $response['description'] ?? trans('commands.refund.unknown_error');
                 Log::error('Ошибка возврата платежа: ', [
                     'user_id' => $params['user_id'],
                     'charge_id' => $params['charge_id'],
                     'error' => $errorMessage
                 ]);
-                Telegram::message($this->chat_id, "❌ Ошибка возврата: {$errorMessage}")->send();
+                $message = trans('commands.refund.refund_error', ['error' => $errorMessage]);
+                Telegram::message($this->chat_id, $message)->send();
             }
         } catch (\Exception $e) {
             Log::error('Исключение команды возврата: ', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            Telegram::message($this->chat_id, "❌ Ошибка: " . $e->getMessage())->send();
+            $message = trans('commands.refund.exception_error', ['error' => $e->getMessage()]);
+            Telegram::message($this->chat_id, $message)->send();
         }
     }
 
@@ -114,12 +127,6 @@ class RefundCommand extends Webhook
 
     private function getUsageHelp(): string
     {
-        return "💰 Возврат платежа\n\n" .
-            "📝 Использование:\n" .
-            "/refund [user_id] [charge_id]\n\n" .
-            "Где:\n" .
-            "- user_id - ID пользователя (число)\n" .
-            "- charge_id - ID платежа Stars\n\n" .
-            "⚠️ Внимание: Эта операция необратима!";
+        return trans('commands.refund.usage_help');
     }
 }

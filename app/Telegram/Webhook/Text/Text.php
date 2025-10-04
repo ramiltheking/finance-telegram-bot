@@ -5,6 +5,7 @@ namespace App\Telegram\Webhook\Text;
 use App\Facades\Telegram;
 use App\Models\User;
 use App\Services\OpenAIService;
+use App\Services\CategoryService;
 use App\Telegram\Helpers\InlineButton;
 use App\Telegram\Webhook\Webhook;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ class Text extends Webhook
     {
         $text = $this->request->input('message.text') ?? '';
         $openai = new OpenAIService();
-        $operation = $openai->parseOperationFromText($text);
+        $operation = $openai->parseOperationFromText($text, $this->chat_id);
 
         if (!$operation) {
             Telegram::message($this->chat_id, __('messages.operation_parse_failed'), $this->message_id)->send();
@@ -51,6 +52,12 @@ class Text extends Webhook
         $currency = $operation['currency'] ?? 'KZT';
         $title = $operation['title'] ?? '';
 
+        $categoryService = new CategoryService();
+
+        $categoryData = $categoryService->resolveCategory($operation['category'] ?? null, $operation['type'], $this->chat_id);
+        $categoryType = $categoryData['type'];
+        $categoryName = $categoryData['name'];
+
         $userText = $operation['type'] === 'income'
             ? __('messages.income_text', [
                 'amount'   => $amount,
@@ -71,16 +78,18 @@ class Text extends Webhook
         }
 
         $operationId = DB::table('operations')->insertGetId([
-            'user_id'     => $this->chat_id,
-            'type'        => $operation['type'],
-            'amount'      => $operation['amount'],
-            'currency'    => $operation['currency'],
-            'category'    => $operation['category'] ?? null,
-            'description' => $operation['title'] ?? null,
-            'occurred_at' => now(),
-            'meta'        => null,
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'user_id'       => $this->chat_id,
+            'type'          => $operation['type'],
+            'amount'        => $operation['amount'],
+            'currency'      => $operation['currency'],
+            'category'      => $categoryName,
+            'category_type' => $categoryType,
+            'description'   => $operation['title'] ?? null,
+            'occurred_at'   => now(),
+            'meta'          => null,
+            'status'        => 'pending',
+            'created_at'    => now(),
+            'updated_at'    => now(),
         ]);
 
         InlineButton::add(__('messages.confirm'), 'Confirm', ['operation_id' => $operationId,], 1);

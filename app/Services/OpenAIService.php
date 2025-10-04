@@ -8,10 +8,12 @@ use Illuminate\Support\Facades\Log;
 class OpenAIService
 {
     protected string $key;
+    protected $categoryService;
 
     public function __construct()
     {
         $this->key = (string) env('OPENAI_API_KEY');
+        $this->categoryService = new CategoryService();
     }
 
     public function transcribeAudio(string $binary): string
@@ -35,8 +37,10 @@ class OpenAIService
         }
     }
 
-    public function parseOperationFromText(string $text): ?array
+    public function parseOperationFromText(string $text, ?int $userId = null): ?array
     {
+        $categories = $this->categoryService->getAvailableCategories($userId);
+
         $systemPrompt = <<<PROMPT
             You are accountant parser. Parse user's phrase into JSON:
 
@@ -46,7 +50,6 @@ class OpenAIService
                 "amount": number,
                 "currency": string,
                 "category": string,
-                "occurred_at": "YYYY-MM-DD"
             }
 
             Rules:
@@ -54,7 +57,6 @@ class OpenAIService
             2) Do not invent new categories.
             3) "type" must be "income" if the category is from INCOME list, or "expense" if from EXPENSE list.
             4) return of the “title” in the same language that was used by the user of the written financial transaction.
-            4) "occurred_at" must be today’s date if not explicitly mentioned.
             5) Determine the currency from the text or from the context:
             - If text contains "доллар", "бакс", "usd", "$" → "USD"
             - If text contains "рубл", "₽", "rub" → "RUB"
@@ -64,9 +66,11 @@ class OpenAIService
             6) If the message is not a financial transaction, return null.
             7) "amount" must always be a valid number (float).
 
+            **IMPORTANT FOR CUSTOM CATEGORIES**: First, check whether the user has created categories that fit the context. When using custom categories, ALWAYS return the exact same name as specified in the "Custom Categories" list below. If there are no custom categories, use the system ones. Do not change or translate the names of custom categories.
+
             Available categories:
 
-            { "INCOME": { "Work & Business": [ "Salary", "Freelance", "Side Jobs", "Business Profit", "Selling Services" ], "Investments & Capital": [ "Investments", "Dividends", "Currency Exchange Profit", "Digital Assets Sale", "Royalties", "Intellectual Property Sale" ], "Real Estate & Rent": [ "Rent", "Rental Equipment/Transport" ], "Social & Personal": [ "Social Payments", "Pension", "Scholarship / Grant", "Gifts", "Prizes", "Inheritance" ], "Refunds & Donations": [ "Debt Return", "Refunds & Compensations", "Crowdfunding / Donations Received", "Affiliate & Advertising", "Online Projects", "Cashback" ], "Loans": [ "Loans Received" ] }, "EXPENSE": { "Housing & Utilities": [ "Housing", "Rent / Mortgage", "Utilities", "Internet & Mobile", "Household Goods", "Furniture & Appliances", "Home Renovation & Repairs", "Home Security" ], "Personal": [ "Clothes", "Beauty & Care", "Hairdresser", "Smartphones & Gadgets", "Computers", "Hobbies & Collections" ], "Family & Children": [ "Children & Education", "Tutors", "Courses", "Gifts to Others", "Pets" ], "Food & Leisure": [ "Groceries", "Restaurants", "Coffee & Snacks", "Food Delivery", "Bars & Clubs", "Cinema & Theatre", "Music & Concerts", "Games", "Travel", "Travel Tickets", "Books", "Streaming & Entertainment Subscriptions" ], "Transport": [ "Public Transport", "Taxi", "Fuel", "Car Maintenance", "Parking & Tolls" ], "Health": [ "Doctors", "Dentist", "Medicine", "Fitness & Yoga", "Sport & Fitness", "Health Insurance" ], "Finance & Obligations": [ "Credits & Debts", "Transfers", "Investments Purchase", "Insurance", "Currency Exchange", "Loans Given", "Taxes", "Bank Fees & Commissions", "Legal Services & Fines" ], "Other": [ "Subscriptions", "Online Services", "Business Expenses", "Charity & Donations", "Alcohol & Tobacco", "Gambling & Lottery" ] } }
+            {$categories}
         PROMPT;
 
         try {

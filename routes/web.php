@@ -1,11 +1,11 @@
 <?php
 
 use App\Facades\Telegram;
-
+use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\MiniAppController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TarifsController;
@@ -23,8 +23,8 @@ Route::get('/telegram-required', function () {
 })->name('telegram.required');
 
 Route::prefix('miniapp')->middleware([TelegramAuth::class, SetUserLocale::class])->group(function () {
-    Route::get('/', [MiniAppController::class, 'dashboard'])->name('miniapp.index');
-    Route::post('/dashboard/data', [MiniAppController::class, 'dashboardData']);
+    Route::get('/', [DashboardController::class, 'dashboard'])->name('miniapp.index');
+    Route::post('/dashboard/data', [DashboardController::class, 'dashboardData']);
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('miniapp.profile');
     Route::post('/profile/data', [ProfileController::class, 'profileData']);
@@ -41,6 +41,15 @@ Route::prefix('miniapp')->middleware([TelegramAuth::class, SetUserLocale::class]
     Route::get('/tarifs', [TarifsController::class, 'index'])->name('miniapp.tarifs');
 
     Route::get('/export/{format}', [ExportController::class, 'export'])->name('miniapp.export');
+});
+
+Route::middleware(['web'])->group(function () {
+    Route::prefix('miniapp')->group(function () {
+        Route::get('/categories', [CategoryController::class, 'index']);
+        Route::post('/categories', [CategoryController::class, 'store']);
+        Route::put('/categories/{id}', [CategoryController::class, 'update']);
+        Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+    });
 });
 
 Route::any('/success-payment', [RobokassaController::class, 'success'])->name('robokassa.success');

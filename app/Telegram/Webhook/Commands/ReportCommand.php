@@ -5,8 +5,8 @@ namespace App\Telegram\Webhook\Commands;
 use App\Models\Operation;
 use Carbon\Carbon;
 use App\Facades\Telegram;
-use App\Models\Category;
 use App\Models\User;
+use App\Services\CategoryService;
 use App\Telegram\Webhook\Webhook;
 
 class ReportCommand extends Webhook
@@ -41,26 +41,25 @@ class ReportCommand extends Webhook
         $userSettings = $user->settings;
         $userLang = $userSettings?->language ?? 'ru';
 
-        $categoryField = $userLang === 'ru' ? 'name_ru' : 'name_en';
-        $categoryMap = Category::pluck($categoryField, 'name_en')->toArray();
+        $categoryService = new CategoryService();
 
         foreach ($operations as $op) {
             $amount = (float)$op->amount;
-            $catCode = $op->category;
-            $catName = $categoryMap[$catCode] ?? trans('commands.report.no_category');
+
+            $categoryName = $categoryService->getCategoryName($op, $userLang) ?? trans('commands.report.no_category');
 
             if ($op->type === 'expense') {
                 $totalSpent += $amount;
-                if (!isset($expenseCategories[$catName])) {
-                    $expenseCategories[$catName] = 0;
+                if (!isset($expenseCategories[$categoryName])) {
+                    $expenseCategories[$categoryName] = 0;
                 }
-                $expenseCategories[$catName] += $amount;
+                $expenseCategories[$categoryName] += $amount;
             } elseif ($op->type === 'income') {
                 $totalClaimed += $amount;
-                if (!isset($incomeCategories[$catName])) {
-                    $incomeCategories[$catName] = 0;
+                if (!isset($incomeCategories[$categoryName])) {
+                    $incomeCategories[$categoryName] = 0;
                 }
-                $incomeCategories[$catName] += $amount;
+                $incomeCategories[$categoryName] += $amount;
             }
         }
 
@@ -69,29 +68,60 @@ class ReportCommand extends Webhook
 
         $currency = $operations->first()->currency;
 
-        $message = trans('commands.report.title') . "\n\n";
-        $message .= trans('commands.report.total_expenses', [
+        $message = trans('commands.report.title') . "\n";
+        $message .= trans('commands.report.period', [
+            'from' => $oneWeekAgo->format('d.m.Y'),
+            'to' => Carbon::now()->format('d.m.Y')
+        ]) . "\n\n";
+
+        $message .= "💰 " . trans('commands.report.total_income', [
+            'amount' => number_format($totalClaimed, 2, '.', ' '),
+            'currency' => $currency
+        ]) . "\n";
+
+        $message .= "➖ " . trans('commands.report.total_expenses', [
             'amount' => number_format($totalSpent, 2, '.', ' '),
             'currency' => $currency
         ]) . "\n";
-        $message .= trans('commands.report.total_income', [
-            'amount' => number_format($totalClaimed, 2, '.', ' '),
-            'currency' => $currency
-        ]) . "\n\n";
+
+        $balance = $totalClaimed - $totalSpent;
+        $balanceIcon = $balance > 0 ? '💹' : ($balance < 0 ? '🔻' : '⚖️');
+        $balanceText = $balance > 0
+            ? trans('commands.report.balance_positive', ['amount' => number_format($balance, 2, '.', ' ')])
+            : ($balance < 0
+                ? trans('commands.report.balance_negative', ['amount' => number_format(abs($balance), 2, '.', ' ')])
+                : trans('commands.report.balance_zero'));
+
+        $message .= "{$balanceIcon} " . trans('commands.report.balance') . ": {$balanceText} {$currency}\n\n";
 
         if (!empty($expenseCategories)) {
-            $message .= "📉 " . trans('commands.full_report.category_totals') . " (" . trans('commands.full_report.expenses') . "):\n";
+            $message .= "📊 " . trans('commands.report.expense_by_categories') . ":\n";
+            $counter = 1;
             foreach ($expenseCategories as $category => $total) {
-                $message .= "{$category}: " . number_format($total, 2, '.', ' ') . " {$currency}\n";
+                $percentage = $totalSpent > 0 ? round(($total / $totalSpent) * 100) : 0;
+                $message .= "{$counter}. {$category}: " . number_format($total, 2, '.', ' ') . " {$currency} ({$percentage}%)\n";
+                $counter++;
+
+                if ($counter > 10) break;
             }
             $message .= "\n";
         }
 
         if (!empty($incomeCategories)) {
-            $message .= "📈 " . trans('commands.full_report.category_totals') . " (" . trans('commands.full_report.income') . "):\n";
+            $message .= "📈 " . trans('commands.report.income_by_categories') . ":\n";
+            $counter = 1;
             foreach ($incomeCategories as $category => $total) {
-                $message .= "{$category}: " . number_format($total, 2, '.', ' ') . " {$currency}\n";
+                $percentage = $totalClaimed > 0 ? round(($total / $totalClaimed) * 100) : 0;
+                $message .= "{$counter}. {$category}: " . number_format($total, 2, '.', ' ') . " {$currency} ({$percentage}%)\n";
+                $counter++;
+
+                if ($counter > 10) break;
             }
+        }
+
+        $currencies = $operations->pluck('currency')->unique();
+        if ($currencies->count() > 1) {
+            $message .= "\n💱 " . trans('commands.report.currencies_used') . ": " . $currencies->implode(', ');
         }
 
         Telegram::message($this->chat_id, $message)->send();

@@ -30,7 +30,7 @@ class User extends Authenticatable
 
     public function operations()
     {
-        return $this->hasMany(Operation::class);
+        return $this->hasMany(Operation::class, 'user_id', 'telegram_id');
     }
 
     public function reminders()
@@ -46,5 +46,10 @@ class User extends Authenticatable
     public function payments()
     {
         return $this->hasMany(TelegramPayment::class);
+    }
+
+    public function categories()
+    {
+        return $this->hasMany(UserCategory::class, 'user_id', 'telegram_id');
     }
 }

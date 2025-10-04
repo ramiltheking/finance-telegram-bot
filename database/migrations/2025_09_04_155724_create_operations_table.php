@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('amount', 14, 2);
             $table->string('currency', 3)->default('KZT');
             $table->string('category')->nullable();
+            $table->enum('category_type', ['system', 'custom'])->default('system');
             $table->text('description')->nullable();
             $table->timestamp('occurred_at')->nullable();
             $table->json('meta')->nullable();
