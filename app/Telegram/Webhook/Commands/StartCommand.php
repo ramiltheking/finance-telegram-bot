@@ -98,10 +98,11 @@ class StartCommand extends Webhook
         $first_name = $this->request->input('message')['from']['first_name'];
         $miniapp_url = env('APP_URL') . '/miniapp';
 
-        InlineButton::add(trans('commands.start.buttons.work_info', [], $this->userLang), 'WorkInfo', [], 1);
-        InlineButton::add(trans('commands.start.buttons.tarifs', [], $this->userLang), 'Tarifs', [], 2);
-        InlineButton::web_app(trans('commands.start.buttons.statistics', [], $this->userLang), $miniapp_url, 3);
+        $buttons = InlineButton::create()->add(trans('commands.start.buttons.work_info', [], $this->userLang), 'WorkInfo', [], 1)
+                   ->add(trans('commands.start.buttons.tarifs', [], $this->userLang), 'Tarifs', [], 2)
+                   ->web_app(trans('commands.start.buttons.statistics', [], $this->userLang), $miniapp_url, 3)
+                   ->get();
 
-        return Telegram::inlineButtons($this->chat_id, trans('messages.welcome', ['name' => $first_name], $this->userLang), InlineButton::$buttons)->send();
+        return Telegram::inlineButtons($this->chat_id, trans('messages.welcome', ['name' => $first_name], $this->userLang), $buttons)->send();
     }
 }

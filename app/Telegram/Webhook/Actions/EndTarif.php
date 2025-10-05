@@ -50,8 +50,8 @@ class EndTarif extends Webhook
             $message .= trans('actions.tarifs.feature_export', [], $userLang) . "\n\n";
             $message .= trans('actions.tarifs.payment_prompt', [], $userLang);
 
-            InlineButton::link(trans('actions.end_tarif.pay_button', [], $userLang), $invoiceUrl);
-            Telegram::inlineButtons($this->chat_id, $message, InlineButton::$buttons)->send();
+            $buttons = InlineButton::create()->link(trans('actions.end_tarif.pay_button', [], $userLang), $invoiceUrl)->get();
+            Telegram::inlineButtons($this->chat_id, $message, $buttons)->send();
         } else {
             $message = trans('actions.end_tarif.expired_message', [], $userLang);
             Telegram::message($this->chat_id, $message)->send();

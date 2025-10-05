@@ -7,6 +7,7 @@ use App\Services\TelegramPaymentService;
 use App\Telegram\Webhook\Webhook;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use App\Telegram\Helpers\InlineButton;
 
 class SubscribeCommand extends Webhook
 {
@@ -14,11 +15,13 @@ class SubscribeCommand extends Webhook
         'monthly' => [
             'price' => 250,
             'days' => 30,
+            'period' => "2592000",
             'currency' => 'XTR'
         ],
         'yearly' => [
             'price' => 2500,
             'days' => 365,
+            'period' => "31536000",
             'currency' => 'XTR'
         ]
     ];
@@ -44,39 +47,35 @@ class SubscribeCommand extends Webhook
         $plan = $this->subscriptionPlans[$planType];
         $payload = TelegramPaymentService::createSubscriptionPayload($userId, $planType);
 
-        try {
-            $response = Telegram::createInvoice(
-                $userId,
-                trans("commands.subscribe.{$planType}_title", [], $userLang),
-                trans("commands.subscribe.{$planType}_description", ['days' => $plan['days']], $userLang),
-                $payload,
+        $invoiceResponse = Telegram::createInvoiceLink(
+            trans("commands.subscribe.{$planType}_title", [], $userLang),
+            trans("commands.subscribe.{$planType}_description", ['days' => $plan['days']], [], $userLang),
+            $payload,
+            [
                 [
-                    [
-                        'label' => trans("commands.subscribe.{$planType}_label", [], $userLang),
-                        'amount' => $plan['price']
-                    ]
-                ],
-                $plan['currency']
-            )->send();
+                    'label' => trans("commands.subscribe.{$planType}_label", [], $userLang),
+                    'amount' => $plan['price']
+                ]
+            ],
+            $plan['currency'],
+            $plan['period']
+        )->send();
 
-            if (!$response['ok']) {
-                $errorMessage = $response['description'] ?? 'Неизвестная ошибка';
-                Log::error('Invoice creation failed', [
-                    'error' => $errorMessage,
-                    'error_code' => $response['error_code'] ?? 'unknown',
-                    'plan_type' => $planType
-                ]);
+        if ($invoiceResponse['ok']) {
+            $invoiceUrl = $invoiceResponse['result'];
 
-                Telegram::message($userId, trans('commands.subscribe.invoice_failed', [], $userLang))->send();
-            }
-        } catch (\Exception $e) {
-            Log::error('SubscribeCommand exception', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'plan_type' => $planType
-            ]);
+            $message = trans("commands.subscribe.{$planType}_title", [], $userLang) . "\n\n";
+            $message .= trans("actions.tarifs.feature_unlimited", [], $userLang) . "\n";
+            $message .= trans("actions.tarifs.feature_voice", [], $userLang) . "\n";
+            $message .= trans("actions.tarifs.feature_analytics", [], $userLang) . "\n";
+            $message .= trans("actions.tarifs.feature_reminders", [], $userLang) . "\n";
+            $message .= trans("actions.tarifs.feature_export", [], $userLang) . "\n\n";
+            $message .= trans("actions.tarifs.payment_prompt", [], $userLang);
 
-            Telegram::message($userId, trans('commands.subscribe.invoice_error', [], $userLang))->send();
+            $buttons = InlineButton::create()->link(trans('actions.tarifs.pay_button', [], $userLang), $invoiceUrl)->get();
+            Telegram::inlineButtons($this->chat_id, $message, $buttons)->send();
+        } else {
+            Telegram::message($this->chat_id, trans('commands.subscribe.invoice_failed', [], $userLang))->send();
         }
     }
 }

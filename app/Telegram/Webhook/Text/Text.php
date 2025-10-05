@@ -92,9 +92,11 @@ class Text extends Webhook
             'updated_at'    => now(),
         ]);
 
-        InlineButton::add(__('messages.confirm'), 'Confirm', ['operation_id' => $operationId,], 1);
-        InlineButton::add(__('messages.decline'), 'Decline', ['operation_id' => $operationId,], 1);
-        Telegram::inlineButtons($this->chat_id, $userText, InlineButton::$buttons)->send();
+        $buttons = InlineButton::create()->add(__('messages.confirm'), 'Confirm', ['operation_id' => $operationId,], 1)
+                   ->add(__('messages.decline'), 'Decline', ['operation_id' => $operationId,], 1)
+                   ->get();
+
+        Telegram::inlineButtons($this->chat_id, $userText, $buttons)->send();
 
         Log::info("Операция для подтверждения (текст)", $operation);
 

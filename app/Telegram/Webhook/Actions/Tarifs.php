@@ -48,8 +48,8 @@ class Tarifs extends Webhook
             $message .= trans('actions.tarifs.feature_export', [], $userLang) . "\n\n";
             $message .= trans('actions.tarifs.payment_prompt', [], $userLang);
 
-            InlineButton::link(trans('actions.tarifs.pay_button', [], $userLang), $invoiceUrl);
-            Telegram::inlineButtons($this->chat_id, $message, InlineButton::$buttons)->send();
+            $buttons = InlineButton::create()->link(trans('actions.tarifs.pay_button', [], $userLang), $invoiceUrl)->get();
+            Telegram::inlineButtons($this->chat_id, $message, $buttons)->send();
         } else {
             Telegram::message($this->chat_id, trans('actions.tarifs.invoice_failed', [], $userLang))->send();
         }

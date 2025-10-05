@@ -1,7 +1,19 @@
 <?php
 
 return [
-    'welcome' => '👋 Welcome, :name!',
+    'welcome' => "👋 Welcome, :name!\n\n" .
+    "<b>🤖 I'm your personal finance assistant - Finly</b>\n\n" .
+    "<b>✨ My key Features:</b>\n" .
+    "📝 Smart transaction tracking via text or voice\n" .
+    "📊 Detailed analytics and visualization\n" .
+    "🔔 Custom categories and reminders\n" .
+    "💡 AI-powered financial advice\n\n" .
+    "<b>🚀 Quick Start:</b>\n" .
+    "1️⃣ Type <b>\"Spent 5000 on groceries\"</b>\n" .
+    "2️⃣ Or send a voice message\n" .
+    "3️⃣ I'll automatically recognize and record everything\n\n" .
+    "🎯 <b>Start right now!</b> Just tell me about any financial transaction, and I'll help you track it.\n\n" .
+    "💡 <b>Tip: Try sending a voice message - it works just as easily!</b>",
     'reminder' => '🔔 Don’t forget to log your operations for today.',
 
     // используется в файлах Text.php & VoiceMessage.php

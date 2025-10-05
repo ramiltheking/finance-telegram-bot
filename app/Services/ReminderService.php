@@ -33,8 +33,8 @@ class ReminderService
 
             if ($userTime->hour == $hour && $userTime->minute == $minute) {
                 $settings_url = env('APP_URL') . '/miniapp/settings';
-                InlineButton::web_app('⚙️ Настроить напоминания', $settings_url, 1);
-                Telegram::inlineButtons($user->telegram_id, __('messages.reminder', locale: $settings->language), InlineButton::$buttons)->send();
+                $buttons = InlineButton::create()->web_app('⚙️ Настроить напоминания', $settings_url, 1)->get();
+                Telegram::inlineButtons($user->telegram_id, __('messages.reminder', locale: $settings->language), $buttons)->send();
 
                 Log::info("Напоминание отправлено пользователю {$user->telegram_id} ({$timezone}) в {$hour}:{$minute}");
             }

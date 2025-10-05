@@ -3,7 +3,7 @@
 return [
     'start' => [
         'subscribe' => [
-            'invoice_title' => 'Premium subscription for 1 month',
+            'invoice_title' => '💎 Premium subscription for 1 month',
             'invoice_description' => 'Access to all bot features for 30 days',
             'invoice_label' => 'Premium subscription (1 month)',
             'invoice_failed' => '❌ Failed to create invoice. Please try again later.',
@@ -99,10 +99,10 @@ return [
         'custom_text' => '🔔 Reminder: :text',
     ],
     'subscribe' => [
-        'monthly_title' => 'Premium subscription for 1 month',
+        'monthly_title' => '💎 Premium subscription for 1 month',
         'monthly_description' => 'Access to all bot features for :days days. Subscription activates automatically after payment.',
         'monthly_label' => 'Premium subscription (1 month)',
-        'yearly_title' => 'Premium subscription for 1 year',
+        'yearly_title' => '💎 Premium subscription for 1 year',
         'yearly_description' => 'Access to all bot features for :days days. Subscription activates automatically after payment.',
         'yearly_label' => 'Premium subscription (1 year)',
         'invoice_failed' => '❌ Failed to create invoice',

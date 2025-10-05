@@ -4,55 +4,89 @@ namespace App\Telegram\Helpers;
 
 class InlineButton
 {
-    private static $button_number = 1;
-    public static $buttons = [
-        'inline_keyboard' => [
+    private $buttons = ['inline_keyboard' => []];
+    private $buttonNumber = 1;
 
-        ]
-    ];
-
-    public static function add(mixed $text, string $action, array $data, int $row = 1)
+    public function add(mixed $text, string $action, array $data = [], int $row = 1): self
     {
         $data['action'] = $action;
-        $data['button_number'] = self::$button_number;
-        self::$button_number++;
-        self::$buttons['inline_keyboard'][$row-1][] = [
+        $data['button_number'] = $this->buttonNumber;
+        $this->buttonNumber++;
+
+        $rowIndex = $row - 1;
+        if (!isset($this->buttons['inline_keyboard'][$rowIndex])) {
+            $this->buttons['inline_keyboard'][$rowIndex] = [];
+        }
+
+        $this->buttons['inline_keyboard'][$rowIndex][] = [
             'text' => $text,
             'callback_data' => json_encode($data),
         ];
+
+        return $this;
     }
 
-    public static function link(mixed $text, string $url, int $row = 1)
+    public function link(mixed $text, string $url, int $row = 1): self
     {
-        self::$buttons['inline_keyboard'][$row-1][] = [
+        $rowIndex = $row - 1;
+        if (!isset($this->buttons['inline_keyboard'][$rowIndex])) {
+            $this->buttons['inline_keyboard'][$rowIndex] = [];
+        }
+
+        $this->buttons['inline_keyboard'][$rowIndex][] = [
             'text' => $text,
             'url' => $url,
         ];
+
+        return $this;
     }
 
-    public static function web_app(mixed $text, string $url, int $row = 1)
+    public function web_app(mixed $text, string $url, int $row = 1): self
     {
-        self::$buttons['inline_keyboard'][$row-1][] = [
+        $rowIndex = $row - 1;
+        if (!isset($this->buttons['inline_keyboard'][$rowIndex])) {
+            $this->buttons['inline_keyboard'][$rowIndex] = [];
+        }
+
+        $this->buttons['inline_keyboard'][$rowIndex][] = [
             'text' => $text,
             'web_app' => [
                 'url' => $url
             ],
         ];
+
+        return $this;
     }
 
-    public static function pay(mixed $text, string $payload, int $row = 1)
+    public function pay(mixed $text, int $row = 1): self
     {
-        self::$buttons['inline_keyboard'][$row-1][] = [
+        $rowIndex = $row - 1;
+        if (!isset($this->buttons['inline_keyboard'][$rowIndex])) {
+            $this->buttons['inline_keyboard'][$rowIndex] = [];
+        }
+
+        $this->buttons['inline_keyboard'][$rowIndex][] = [
             'text' => $text,
             'pay' => true,
         ];
+
+        return $this;
     }
 
-    public static function invoice(mixed $text, string $invoicePayload, int $row = 1)
+    public function get(): array
     {
-        self::$buttons['inline_keyboard'][$row-1][] = [
-            'text' => $text,
-            'pay' => true,
-        ];
+        return $this->buttons;
+    }
+
+    public function clear(): self
+    {
+        $this->buttons = ['inline_keyboard' => []];
+        $this->buttonNumber = 1;
+        return $this;
+    }
+
+    public static function create(): self
+    {
+        return new self();
     }
 }
