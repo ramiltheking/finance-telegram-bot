@@ -681,7 +681,7 @@
 
             <div id="recurringDisabled" class="recurring-info">
                 <p class="info-note">{{ __('settings.auto_renewal_disabled') }}</p>
-                <a href="{{ route('miniapp.tarifs') }}" class="subscribe-btn">{{ __('settings.subscribe') }}</a>
+                <a class="subscribe-btn" id="pay-btn">{{ __('settings.subscribe') }}</a>
             </div>
         </div>
 
@@ -705,59 +705,62 @@
         </div>
 
         <div class="card custom-categories">
-            <h3>🏷️ Мои категории</h3>
+            <h3>{{ __('settings.my_categories') }}</h3>
 
             <div class="categories-section">
-                <h4>💰 Доходы</h4>
+                <h4>{{ __('settings.income') }}</h4>
                 <div class="category-list" id="incomeCategories">
                     <div class="empty-categories">
-                        <p>Пока нет категорий доходов</p>
+                        <p>{{ __('settings.no_income_categories') }}</p>
                     </div>
                 </div>
             </div>
 
             <div class="categories-section">
-                <h4>➖ Расходы</h4>
+                <h4>{{ __('settings.expense') }}</h4>
                 <div class="category-list" id="expenseCategories">
                     <div class="empty-categories">
-                        <p>Пока нет категорий расходов</p>
+                        <p>{{ __('settings.no_expense_categories') }}</p>
                     </div>
                 </div>
             </div>
 
             <button class="add-category-btn" onclick="showCategoryModal()">
-                <span>+</span> Добавить категорию
+                <span>+</span> {{ __('settings.add_category') }}
             </button>
         </div>
 
         <div id="categoryModal" class="modal-overlay hidden">
             <div class="modal">
-                <h3 id="modalTitle">Добавить категорию</h3>
+                <h3 id="modalTitle">{{ __('settings.add_category') }}</h3>
 
                 <div class="form-group">
-                    <label for="categoryType">Тип категории</label>
+                    <label for="categoryType">{{ __('settings.category_type') }}</label>
                     <select id="categoryType" class="form-select">
-                        <option value="EXPENSE">➖ Расход</option>
-                        <option value="INCOME">💰 Доход</option>
+                        <option value="EXPENSE">{{ __('settings.expense') }}</option>
+                        <option value="INCOME">{{ __('settings.income') }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="categoryName">Название категории *</label>
-                    <input type="text" id="categoryName" class="form-input" placeholder="Введите название категории"
+                    <label for="categoryName">{{ __('settings.category_name') }} *</label>
+                    <input type="text" id="categoryName" class="form-input"
+                        placeholder="{{ __('settings.category_name_placeholder') }}"
                         maxlength="50" required>
-                    <small style="color: #666; font-size: 12px;">Обязательное поле, максимум 50 символов</small>
+                    <small style="color: #666; font-size: 12px;">{{ __('settings.category_name_hint') }}</small>
                 </div>
 
                 <div class="form-group">
-                    <label for="categoryTitle">Описание категории</label>
-                    <textarea id="categoryTitle" class="form-textarea" placeholder="Описание категории" maxlength="255" rows="3"></textarea>
-                    <small style="color: #666; font-size: 12px;">Необязательное поле, максимум 255 символов</small>
+                    <label for="categoryTitle">{{ __('settings.category_description') }}</label>
+                    <textarea id="categoryTitle" class="form-textarea"
+                            placeholder="{{ __('settings.category_description_placeholder') }}"
+                            maxlength="255" rows="3"></textarea>
+                    <small style="color: #666; font-size: 12px;">{{ __('settings.category_description_hint') }}</small>
                 </div>
 
                 <div class="modal-actions">
-                    <button class="btn-save" onclick="saveCategory()">💾 Сохранить</button>
-                    <button class="btn-cancel" onclick="closeCategoryModal()">❌ Отмена</button>
+                    <button class="btn-save" onclick="saveCategory()">💾 {{ __('settings.save') }}</button>
+                    <button class="btn-cancel" onclick="closeCategoryModal()">❌ {{ __('settings.cancel') }}</button>
                 </div>
             </div>
         </div>
@@ -866,16 +869,9 @@
             if (!allowEmpty && str.length === 0) return false;
             if (str.length > maxLength) return false;
 
-            const dangerousPatterns = [
-                /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-                /javascript:/gi,
-                /vbscript:/gi,
-                /on\w+\s*=/gi,
-                /expression\s*\(/gi,
-                /url\s*\(/gi
-            ];
+            const allowedPattern = /^[a-zA-Zа-яА-ЯёЁ0-9\s]*$/;
 
-            return !dangerousPatterns.some(pattern => pattern.test(str));
+            return allowedPattern.test(str);
         }
 
         function escapeHtml(unsafe) {
@@ -913,11 +909,11 @@
                     renderCategories();
                 } else {
                     console.error('Error loading categories:', data.error);
-                    showToast('Ошибка загрузки категорий', 'error');
+                    showToast(window.i18n.load_categories_error || 'Ошибка загрузки категорий', 'error');
                 }
             } catch (error) {
                 console.error('Error loading categories:', error);
-                showToast('Ошибка загрузки категорий', 'error');
+                showToast(window.i18n.load_categories_error || 'Ошибка загрузки категорий', 'error');
             }
         }
 
@@ -948,14 +944,15 @@
                                 ${safeDescription ? `<div class="category-description">${safeDescription}</div>` : ''}
                             </div>
                             <div class="category-actions">
-                                <button class="btn-edit" onclick="editCategory(${safeId})" aria-label="Редактировать категорию">✏️</button>
-                                <button class="btn-delete" onclick="deleteCategory(${safeId})" aria-label="Удалить категорию">🗑️</button>
+                                <button class="btn-edit" onclick="editCategory(${safeId})" aria-label="${window.i18n.edit_category || 'Редактировать категорию'}">✏️</button>
+                                <button class="btn-delete" onclick="deleteCategory(${safeId})" aria-label="${window.i18n.delete_category || 'Удалить категорию'}">🗑️</button>
                             </div>
                         </div>
                     `;
                 }).join('');
             } else {
-                incomeContainer.innerHTML = '<div class="empty-categories"><p>Пока нет категорий доходов</p></div>';
+                incomeContainer.innerHTML =
+                    `<div class="empty-categories"><p>${window.i18n.no_income_categories || 'Пока нет категорий доходов'}</p></div>`;
             }
 
             if (expenseCategories.length > 0) {
@@ -967,20 +964,21 @@
                     const safeId = escapeHtml(category.id.toString());
 
                     return `
-                <div class="category-item" data-category-id="${safeId}">
-                    <div class="category-info">
-                        <div class="category-name">${safeName}</div>
-                        ${safeDescription ? `<div class="category-description">${safeDescription}</div>` : ''}
-                    </div>
-                    <div class="category-actions">
-                        <button class="btn-edit" onclick="editCategory(${safeId})" aria-label="Редактировать категорию">✏️</button>
-                        <button class="btn-delete" onclick="deleteCategory(${safeId})" aria-label="Удалить категорию">🗑️</button>
-                    </div>
-                </div>
-            `;
+                        <div class="category-item" data-category-id="${safeId}">
+                            <div class="category-info">
+                                <div class="category-name">${safeName}</div>
+                                ${safeDescription ? `<div class="category-description">${safeDescription}</div>` : ''}
+                            </div>
+                            <div class="category-actions">
+                                <button class="btn-edit" onclick="editCategory(${safeId})" aria-label="${window.i18n.edit_category || 'Редактировать категорию'}">✏️</button>
+                                <button class="btn-delete" onclick="deleteCategory(${safeId})" aria-label="${window.i18n.delete_category || 'Удалить категорию'}">🗑️</button>
+                            </div>
+                        </div>
+                    `;
                 }).join('');
             } else {
-                expenseContainer.innerHTML = '<div class="empty-categories"><p>Пока нет категорий расходов</p></div>';
+                expenseContainer.innerHTML =
+                    `<div class="empty-categories"><p>${window.i18n.no_expense_categories || 'Пока нет категорий расходов'}</p></div>`;
             }
         }
 
@@ -1001,7 +999,7 @@
             typeSelect.value = 'EXPENSE';
 
             if (category && category.id) {
-                modalTitle.textContent = '✏️ Редактировать категорию';
+                modalTitle.textContent = window.i18n.edit_category_title || '✏️ Редактировать категорию';
                 typeSelect.value = validateInput(category.type) ? category.type : 'EXPENSE';
                 nameInput.value = validateInput(category.name, 50) ? category.name : '';
                 titleInput.value = validateInput(category.title, 255, true) ? category.title : '';
@@ -1013,7 +1011,7 @@
                     return;
                 }
             } else {
-                modalTitle.textContent = '➕ Добавить категорию';
+                modalTitle.textContent = window.i18n.add_category_title || '➕ Добавить категорию';
                 editingCategoryId = null;
             }
 
@@ -1026,21 +1024,13 @@
             }, 100);
         }
 
-        function closeCategoryModal() {
-            const modal = document.getElementById('categoryModal');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-            editingCategoryId = null;
-        }
-
         async function saveCategory() {
             const typeSelect = document.getElementById('categoryType');
             const nameInput = document.getElementById('categoryName');
             const titleInput = document.getElementById('categoryTitle');
 
             if (!typeSelect || !nameInput || !titleInput) {
-                showToast('Ошибка: элементы формы не найдены', 'error');
+                showToast(window.i18n.form_elements_not_found || 'Ошибка: элементы формы не найдены', 'error');
                 return;
             }
 
@@ -1049,17 +1039,17 @@
             const title = titleInput.value.trim();
 
             if (!['INCOME', 'EXPENSE'].includes(type)) {
-                showToast('Некорректный тип категории', 'error');
+                showToast(window.i18n.invalid_category_type || 'Некорректный тип категории', 'error');
                 return;
             }
 
             if (!validateInput(name, 50)) {
-                showToast('Некорректное название категории', 'error');
+                showToast(window.i18n.invalid_category_name || 'Некорректное название категории', 'error');
                 return;
             }
 
             if (title && !validateInput(title, 255, true)) {
-                showToast('Некорректное описание категории', 'error');
+                showToast(window.i18n.invalid_category_description || 'Некорректное описание категории', 'error');
                 return;
             }
 
@@ -1097,33 +1087,23 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    showToast(editingCategoryId ? 'Категория обновлена' : 'Категория добавлена');
+                    showToast(editingCategoryId ?
+                        (window.i18n.category_updated || 'Категория обновлена') :
+                        (window.i18n.category_added || 'Категория добавлена')
+                    );
                     closeCategoryModal();
                     await loadCategories();
                 } else {
                     if (data.error === 'category_exists') {
-                        showToast('Категория с таким названием уже существует', 'error');
+                        showToast(window.i18n.category_exists || 'Категория с таким названием уже существует', 'error');
                     } else {
-                        showToast(data.error || 'Ошибка сохранения категории', 'error');
+                        showToast(data.error || (window.i18n.save_category_error || 'Ошибка сохранения категории'),
+                            'error');
                     }
                 }
             } catch (error) {
                 console.error('Error saving category:', error);
-                showToast('Ошибка сохранения категории', 'error');
-            }
-        }
-
-        function editCategory(categoryId) {
-            if (!categoryId || isNaN(parseInt(categoryId))) {
-                console.error('Invalid category ID');
-                return;
-            }
-
-            const category = categories.find(cat => cat && cat.id === parseInt(categoryId));
-            if (category) {
-                showCategoryModal(category);
-            } else {
-                showToast('Категория не найдена', 'error');
+                showToast(window.i18n.save_category_error || 'Ошибка сохранения категории', 'error');
             }
         }
 
@@ -1135,19 +1115,19 @@
 
             const category = categories.find(cat => cat && cat.id === parseInt(categoryId));
             if (!category) {
-                showToast('Категория не найдена', 'error');
+                showToast(window.i18n.category_not_found || 'Категория не найдена', 'error');
                 return;
             }
 
             const safeName = sanitizeHTML(category.name);
 
             const result = await Swal.fire({
-                title: 'Удалить категорию?',
-                html: `Категория <strong>"${safeName}"</strong> будет удалена. Это действие нельзя отменить.`,
+                title: window.i18n.delete_category_confirm || 'Удалить категорию?',
+                html: `${window.i18n.delete_category_text || 'Категория'} <strong>"${safeName}"</strong> ${window.i18n.delete_category_warning || 'будет удалена. Это действие нельзя отменить.'}`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Удалить',
-                cancelButtonText: 'Отмена',
+                confirmButtonText: window.i18n.delete || 'Удалить',
+                cancelButtonText: window.i18n.cancel || 'Отмена',
                 confirmButtonColor: dangerColor,
                 cancelButtonColor: primaryColor,
                 customClass: {
@@ -1176,19 +1156,19 @@
                     if (!response.ok) {
                         if (data.error === 'category_in_use') {
                             Swal.fire({
-                                title: 'Невозможно удалить категорию',
+                                title: window.i18n.cannot_delete_category || 'Невозможно удалить категорию',
                                 html: `
-                            <div style="text-align: left;">
-                                <p>Категория <strong>"${safeName}"</strong> используется в существующих операциях и не может быть удалена.</p>
-                                <p><strong>Что можно сделать:</strong></p>
-                                <ul style="margin: 10px 0; padding-left: 20px;">
-                                    <li>Удалите или измените операции с этой категорией</li>
-                                    <li>Используйте команду /list для просмотра операций</li>
-                                </ul>
-                            </div>
-                        `,
+                                    <div style="text-align: left;">
+                                        <p>${window.i18n.category_in_use_text || 'Категория'} <strong>"${safeName}"</strong> ${window.i18n.category_in_use_warning || 'используется в существующих операциях и не может быть удалена.'}</p>
+                                        <p><strong>${window.i18n.what_can_you_do || 'Что можно сделать:'}</strong></p>
+                                        <ul style="margin: 10px 0; padding-left: 20px;">
+                                            <li>${window.i18n.delete_or_change_operations || 'Удалите или измените операции с этой категорией'}</li>
+                                            <li>${window.i18n.use_list_command || 'Используйте команду /list для просмотра операций'}</li>
+                                        </ul>
+                                    </div>
+                                `,
                                 icon: 'error',
-                                confirmButtonText: 'Понятно',
+                                confirmButtonText: window.i18n.understand || 'Понятно',
                                 width: 500
                             });
                         } else {
@@ -1198,16 +1178,39 @@
                     }
 
                     if (data.success) {
-                        showToast('Категория удалена');
+                        showToast(window.i18n.category_deleted || 'Категория удалена');
                         await loadCategories();
                     } else {
-                        showToast(data.error || 'Ошибка удаления категории', 'error');
+                        showToast(data.error || (window.i18n.delete_category_error || 'Ошибка удаления категории'),
+                            'error');
                     }
                 } catch (error) {
                     console.error('Error deleting category:', error);
-                    showToast('Ошибка удаления категории', 'error');
+                    showToast(window.i18n.delete_category_error || 'Ошибка удаления категории', 'error');
                 }
             }
+        }
+
+        function editCategory(categoryId) {
+            if (!categoryId || isNaN(parseInt(categoryId))) {
+                console.error('Invalid category ID');
+                return;
+            }
+
+            const category = categories.find(cat => cat && cat.id === parseInt(categoryId));
+            if (category) {
+                showCategoryModal(category);
+            } else {
+                showToast(window.i18n.category_not_found, 'error');
+            }
+        }
+
+        function closeCategoryModal() {
+            const modal = document.getElementById('categoryModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            editingCategoryId = null;
         }
 
         function setupEventListeners() {
@@ -1431,6 +1434,20 @@
                 console.error('Fetch API is not supported');
                 return;
             }
+
+            document.getElementById('pay-btn').addEventListener('click', function() {
+                window.location.href = "{{ route('miniapp.tarifs') }}";
+
+                setTimeout(function() {
+                    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                        Telegram.WebApp.close();
+                    } else if (typeof tg !== 'undefined' && tg.WebApp) {
+                        tg.WebApp.close();
+                    } else {
+                         window.close();
+                    }
+                }, 1000);
+            });
 
             try {
                 const settingsData = window.userSettings;

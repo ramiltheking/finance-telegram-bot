@@ -39,13 +39,30 @@ if (username) {
                 subscription = `<h3>${window.i18n.active}</h3><p>${window.i18n.active_until.replace(':date', sub.subscription_ends_at)}</p>`;
                 break;
             case 'expired':
-                subscription = `<h3>${window.i18n.expired}</h3><a href="/miniapp/tarifs" class="pay-btn">${window.i18n.pay_again}</a>`;
+                subscription = `<h3>${window.i18n.expired}</h3><a class="pay-btn" id="pay-btn">${window.i18n.pay_again}</a>`;
                 break;
             default:
-                subscription = `<h3>${window.i18n.no_subscription}</h3><a href="/miniapp/tarifs" class="pay-btn">${window.i18n.pay}</a>`;
+                subscription = `<h3>${window.i18n.no_subscription}</h3><a class="pay-btn" id="pay-btn">${window.i18n.pay}</a>`;
         }
 
         document.getElementById('subStatus').innerHTML = subscription;
+
+        const payBtn = document.getElementById('pay-btn');
+        if (payBtn) {
+            payBtn.addEventListener('click', function() {
+                window.location.href = "/miniapp/tarifs";
+
+                setTimeout(function() {
+                    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                        Telegram.WebApp.close();
+                    } else if (typeof tg !== 'undefined' && tg.WebApp) {
+                        tg.WebApp.close();
+                    } else {
+                        window.close();
+                    }
+                }, 1000);
+            });
+        }
 
         const ctx = document.getElementById('chart').getContext('2d');
         const labels = Object.keys(data.categories);

@@ -271,22 +271,35 @@
                 let html = '';
                 switch (data.status) {
                     case 'trial':
-                        html =
-                            `<h3>${window.i18n.trial}</h3><p>${window.i18n.trial_until.replace(':date', data.trial_ends_at)}</p>`;
+                        html = `<h3>${window.i18n.trial}</h3><p>${window.i18n.trial_until.replace(':date', data.trial_ends_at)}</p>`;
                         break;
                     case 'active':
-                        html =
-                            `<h3>${window.i18n.active}</h3><p>${window.i18n.active_until.replace(':date', data.subscription_ends_at)}</p>`;
+                        html = `<h3>${window.i18n.active}</h3><p>${window.i18n.active_until.replace(':date', data.subscription_ends_at)}</p>`;
                         break;
                     case 'expired':
-                        html =
-                            `<h3>${window.i18n.expired}</h3><a href="/miniapp/tarifs" class="pay-btn">${window.i18n.pay_again}</a>`;
+                        html = `<h3>${window.i18n.expired}</h3><a class="pay-btn" id="pay-btn">${window.i18n.pay_again}</a>`;
                         break;
                     default:
-                        html =
-                            `<h3>${window.i18n.no_subscription}</h3><a href="/miniapp/tarifs" class="pay-btn">${window.i18n.pay}</a>`;
+                        html = `<h3>${window.i18n.no_subscription}</h3><a class="pay-btn" id="pay-btn">${window.i18n.pay}</a>`;
                 }
                 document.getElementById('subscription').innerHTML = html;
+
+                const payBtn = document.getElementById('pay-btn');
+                if (payBtn) {
+                    payBtn.addEventListener('click', function() {
+                        window.location.href = "{{ route('miniapp.tarifs') }}";
+
+                        setTimeout(function() {
+                            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                                Telegram.WebApp.close();
+                            } else if (typeof tg !== 'undefined' && tg.WebApp) {
+                                tg.WebApp.close();
+                            } else {
+                                window.close();
+                            }
+                        }, 1000);
+                    });
+                }
 
                 if (data.emptyPayments) {
                     document.getElementById('payments').innerHTML = `<p class="message">${data.messagePayments}</p>`;
