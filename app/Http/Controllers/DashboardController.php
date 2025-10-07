@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Facades\Telegram;
+use App\Services\CategoryService;
+
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Services\UserService;
 use App\Models\Operation;
-use App\Models\Payment;
-use App\Models\Category;
-use App\Models\UserCategory;
 use App\Models\User;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    protected $categoryService;
+
+    public function __construct(CategoryService $categoryService)
+    {
+        $this->categoryService = $categoryService;
+    }
+
     public function dashboard(Request $request)
     {
         return view('miniapp.dashboard');
@@ -33,6 +36,14 @@ class DashboardController extends Controller
         $userData = json_decode($data['user'], true);
         $telegramId = $userData['id'];
 
+        $user = User::where('telegram_id', $telegramId)->first();
+
+        if (!$user) {
+            return response()->json(['error' => 'Пользователь не найден'], 404);
+        }
+
+        $locale = $user->settings?->language ?? 'ru';
+
         $from = Carbon::now()->subDays(30);
 
         $operations = Operation::where('user_id', $telegramId)
@@ -42,35 +53,25 @@ class DashboardController extends Controller
             ->orderByDesc('occurred_at')
             ->get();
 
-        $locale = Auth::user()->settings?->language ?? 'ru';
-
-        $systemCategories = Category::all()->keyBy('slug');
-
-        $userCategories = UserCategory::where('user_id', $telegramId)
-            ->get()
-            ->keyBy('name');
-
         $categories = [];
         foreach ($operations as $operation) {
-            $categoryName = $this->getCategoryName($operation, $systemCategories, $userCategories, $locale);
+            $categoryName = $this->categoryService->getCategoryName($operation, $locale);
             if (!isset($categories[$categoryName])) {
                 $categories[$categoryName] = 0;
             }
             $categories[$categoryName] += $operation->amount;
         }
 
-        $formattedOperations = $operations->take(10)->map(function ($operation) use ($systemCategories, $userCategories, $locale) {
+        $formattedOperations = $operations->take(10)->map(function ($operation) use ($locale) {
             return [
                 'type' => $operation->type,
                 'amount' => $operation->amount,
                 'currency' => $operation->currency,
-                'category' => $this->getCategoryName($operation, $systemCategories, $userCategories, $locale),
+                'category' => $this->categoryService->getCategoryName($operation, $locale),
                 'description' => $operation->description,
                 'occurred_at' => $operation->occurred_at?->format('d.m.Y H:i'),
             ];
         });
-
-        $payments = Payment::where('user_id', $telegramId)->latest()->get();
 
         $user = User::where('telegram_id', $telegramId)->first();
         $subscription = null;
@@ -93,13 +94,12 @@ class DashboardController extends Controller
             }
         }
 
-        if ($operations->isEmpty() && $payments->isEmpty()) {
+        if ($operations->isEmpty()) {
             return response()->json([
                 'emptyOperations' => true,
                 'messageOperations' => __('dashboard.operations_not_found'),
                 'categories' => [],
                 'operations' => [],
-                'payments' => [],
                 'subscription' => $subscription ?? ['status' => 'expired', 'message' => __('dashboard.pay_again')],
             ]);
         }
@@ -109,25 +109,7 @@ class DashboardController extends Controller
             'messageOperations' => $operations->isEmpty() ? __('dashboard.operations_not_found') : null,
             'categories' => $categories,
             'operations' => $formattedOperations,
-            'payments' => $payments->take(10),
             'subscription' => $subscription ?? ['status' => 'expired', 'message' => __('dashboard.pay_again')],
         ]);
-    }
-
-    private function getCategoryName(Operation $operation, $systemCategories, $userCategories, $locale)
-    {
-        if ($operation->category_type === 'system') {
-            $category = $systemCategories->get($operation->category);
-            if ($category) {
-                return $locale === 'ru' ? $category->name_ru : ($category->name_en ?? $category->name_ru);
-            }
-        } elseif ($operation->category_type === 'custom') {
-            $category = $userCategories->get($operation->category);
-            if ($category) {
-                return $category->name;
-            }
-        }
-
-        return $operation->category;
     }
 }
