@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Facades\Telegram;
-use App\Models\Category;
 use App\Models\Operation;
+use App\Services\CategoryService;
 use App\Services\Export\ExportService;
 use App\Services\UserService;
 use Illuminate\Support\Facades\Auth;
@@ -14,10 +14,12 @@ use Illuminate\Http\Request;
 class ExportController extends Controller
 {
     protected ExportService $exportService;
+    protected CategoryService $categoryService;
 
-    public function __construct(ExportService $exportService)
+    public function __construct(ExportService $exportService, CategoryService $categoryService)
     {
         $this->exportService = $exportService;
+        $this->categoryService = $categoryService;
     }
 
     public function export(Request $request, $format)
@@ -43,14 +45,18 @@ class ExportController extends Controller
         $locale = Auth::user()->settings?->language ?? app()->getLocale();
         app()->setLocale($locale);
 
-        $nameColumn = $locale === 'ru' ? 'name_ru' : 'name_en';
-        $categoryMapById = Category::pluck($nameColumn, 'id')->toArray();
-        $categoryMapByName = Category::pluck($nameColumn, 'name_en')->toArray();
+        $operations = $operations->map(function ($op) use ($locale) {
+            $categoryName = $this->categoryService->getCategoryName($op, $locale);
 
-        $operations = $operations->map(function ($op) use ($categoryMapById, $categoryMapByName) {
-            $cat = $op->category;
-            $op->category_name = $categoryMapById[$cat] ?? $categoryMapByName[$cat] ?? $cat;
-            return $op;
+            $exportOp = new \stdClass();
+            $exportOp->occurred_at = $op->occurred_at;
+            $exportOp->category_name = $categoryName;
+            $exportOp->amount = $op->amount;
+            $exportOp->type = $op->type;
+            $exportOp->currency = $op->currency;
+            $exportOp->description = $op->description;
+
+            return $exportOp;
         });
 
         $filename = "operations_{$telegramId}_" . now()->format('Y-m-d_His') . ".{$format}";
@@ -64,7 +70,7 @@ class ExportController extends Controller
         } catch (\Exception $e) {
             Log::error('Export error: ' . $e->getMessage());
 
-            return response()->json(['error' => 'Ошибка при создании файла: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Ошибка при создании файла, пожалуйста попробуйте позже.'], 500);
         }
     }
 

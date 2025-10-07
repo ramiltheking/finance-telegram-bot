@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use Illuminate\Support\Facades\App;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -10,10 +11,12 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 class OperationsExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize
 {
     protected $operations;
+    protected $locale;
 
     public function __construct($operations)
     {
         $this->operations = $operations;
+        $this->locale = App::getLocale();
     }
 
     public function collection()
@@ -23,11 +26,19 @@ class OperationsExport implements FromCollection, WithHeadings, WithMapping, Sho
 
     public function headings(): array
     {
-        return [
-            'Дата и время',
-            'Категория',
-            'Сумма'
-        ];
+        if ($this->locale === 'ru') {
+            return [
+                'Дата и время',
+                'Категория',
+                'Сумма'
+            ];
+        } else {
+            return [
+                'Date and Time',
+                'Category',
+                'Amount'
+            ];
+        }
     }
 
     public function map($operation): array
