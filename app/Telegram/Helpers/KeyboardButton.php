@@ -4,19 +4,22 @@ namespace App\Telegram\Helpers;
 
 class KeyboardButton
 {
-    private static $button_number = 1;
     public static $buttons = [
-        'keyboard' => [
-
-        ],
+        'keyboard' => [],
         'resize_keyboard' => true,
+        'one_time_keyboard' => false,
     ];
 
     public static function add(mixed $text, int $row = 1)
     {
-        self::$button_number++;
-        self::$buttons['inline_keyboard'][$row-1][] = [
-            'text' => $text,
+        $rowIndex = $row - 1;
+
+        if (!isset(self::$buttons['keyboard'][$rowIndex])) {
+            self::$buttons['keyboard'][$rowIndex] = [];
+        }
+
+        self::$buttons['keyboard'][$rowIndex][] = [
+            'text' => $text
         ];
     }
 
@@ -24,6 +27,14 @@ class KeyboardButton
     {
         self::$buttons = [
             'remove_keyboard' => true,
+        ];
+    }
+
+    public static function clear()
+    {
+        self::$buttons = [
+            'keyboard' => [],
+            'resize_keyboard' => true,
         ];
     }
 }

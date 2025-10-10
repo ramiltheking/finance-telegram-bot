@@ -58,6 +58,7 @@ class ProfileController extends Controller
             DB::table('operations')->where('user_id', $userId)->delete();
             DB::table('payments')->where('user_id', $userId)->delete();
             DB::table('reminders')->where('user_id', $userId)->delete();
+            DB::table('user_categories')->where('user_id', $userId)->delete();
             // DB::table('users')->where('telegram_id', $userId)->delete();
         });
 

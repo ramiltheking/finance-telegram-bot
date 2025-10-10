@@ -39,40 +39,54 @@ class CategoryService
         return $operation->category;
     }
 
-    public function resolveCategory(?string $categoryName, string $type, int $userId): array
+    public function resolveCategory(?string $categoryName, string $requestedType, int $userId): array
     {
         if (!$categoryName) {
             return ['type' => 'system', 'name' => 'other'];
         }
 
+        $normalizedRequestedType = strtoupper($requestedType);
+
+        $existingUserCategory = UserCategory::where('user_id', $userId)
+            ->where('name', $categoryName)
+            ->first();
+
+        if ($existingUserCategory) {
+            $correctedType = strtolower($existingUserCategory->type);
+            $hasTypeConflict = $existingUserCategory->type !== $normalizedRequestedType;
+
+            return [
+                'type' => 'custom',
+                'name' => $existingUserCategory->name,
+                'corrected_type' => $correctedType,
+                'has_type_conflict' => $hasTypeConflict,
+                'original_requested_type' => $requestedType
+            ];
+        }
+
         $systemCategory = Category::where(function ($query) use ($categoryName) {
             $query->where('name_ru', $categoryName)
+                ->orWhere('name_en', $categoryName)
                 ->orWhere('slug', $categoryName);
-        })->where('type', $type)->first();
+        })->where('type', $requestedType)->first();
 
         if ($systemCategory) {
             return ['type' => 'system', 'name' => $systemCategory->slug];
         }
 
-        $userCategory = UserCategory::where('name', $categoryName)
-            ->where('user_id', $userId)
-            ->where('type', strtoupper($type))
-            ->first();
-
-        if ($userCategory) {
-            return ['type' => 'custom', 'name' => $userCategory->name];
-        }
-
-        $uniqueName = $this->generateUniqueCategoryName($categoryName, $userId);
-
         $newUserCategory = UserCategory::create([
             'user_id' => $userId,
-            'type' => strtoupper($type),
-            'name' => $uniqueName,
+            'name' => $categoryName,
+            'type' => $normalizedRequestedType,
             'title' => $categoryName,
         ]);
 
-        return ['type' => 'custom', 'name' => $newUserCategory->name];
+        return [
+            'type' => 'custom',
+            'name' => $newUserCategory->name,
+            'corrected_type' => $requestedType,
+            'has_type_conflict' => false
+        ];
     }
 
     public function generateUniqueCategoryName(string $title, int $userId): string
@@ -94,17 +108,35 @@ class CategoryService
 
     public function getAvailableCategories(?int $userId = null): string
     {
-        $incomeCategories = Category::where('type', 'income')
-            ->whereNull('parent_id')
-            ->with('children')
-            ->get()
-            ->toArray();
+        $allSystemCategories = Category::with('children')->get();
 
-        $expenseCategories = Category::where('type', 'expense')
-            ->whereNull('parent_id')
-            ->with('children')
-            ->get()
-            ->toArray();
+        $systemIncomeCategories = [];
+        $systemExpenseCategories = [];
+
+        foreach ($allSystemCategories as $category) {
+            if (!$category->parent_id) {
+                $categoryName = $category->name_ru;
+                if ($category->type === 'income') {
+                    $systemIncomeCategories[] = $categoryName;
+                } else {
+                    $systemExpenseCategories[] = $categoryName;
+                }
+            }
+
+            foreach ($category->children as $child) {
+                $childName = $child->name_ru;
+                if ($category->type === 'income') {
+                    $systemIncomeCategories[] = $childName;
+                } else {
+                    $systemExpenseCategories[] = $childName;
+                }
+            }
+        }
+
+        $systemIncomeCategories = array_unique($systemIncomeCategories);
+        $systemExpenseCategories = array_unique($systemExpenseCategories);
+        sort($systemIncomeCategories);
+        sort($systemExpenseCategories);
 
         $userIncomeCategories = [];
         $userExpenseCategories = [];
@@ -121,16 +153,19 @@ class CategoryService
                 ->toArray();
         }
 
-        $systemIncomeCategories = $this->formatSystemCategories($incomeCategories);
-        $systemExpenseCategories = $this->formatSystemCategories($expenseCategories);
-
         $prompt = "**SYSTEM CATEGORIES (use exact names as shown):**\n";
         $prompt .= "INCOME: " . implode(', ', $systemIncomeCategories) . "\n\n";
         $prompt .= "EXPENSE: " . implode(', ', $systemExpenseCategories) . "\n\n";
 
-        $prompt .= "**CUSTOM CATEGORIES (user-created, use exact names as shown):**\n";
-        $prompt .= "INCOME: " . implode(', ', $userIncomeCategories) . "\n";
-        $prompt .= "EXPENSE: " . implode(', ', $userExpenseCategories);
+        if (!empty($userIncomeCategories) || !empty($userExpenseCategories)) {
+            $prompt .= "**CUSTOM CATEGORIES (user-created, use exact names as shown):**\n";
+            if (!empty($userIncomeCategories)) {
+                $prompt .= "INCOME: " . implode(', ', $userIncomeCategories) . "\n";
+            }
+            if (!empty($userExpenseCategories)) {
+                $prompt .= "EXPENSE: " . implode(', ', $userExpenseCategories) . "\n";
+            }
+        }
 
         return $prompt;
     }

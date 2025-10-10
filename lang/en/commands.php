@@ -46,8 +46,8 @@ return [
     ],
     'report' => [
         'title' => '📊 Weekly Report',
-        'user_not_found' => 'User not found',
-        'no_operations' => 'No operations found for the last week',
+        'user_not_found' => '❗ User not found',
+        'no_operations' => '❗ No operations found for the last week',
         'no_category' => 'No category',
         'period' => 'Period: :from - :to',
         'total_income' => 'Total income :amount :currency',
@@ -62,8 +62,8 @@ return [
     ],
     'full_report' => [
         'title' => 'Full Financial Report',
-        'user_not_found' => 'User not found',
-        'no_operations' => 'No operations found',
+        'user_not_found' => '❗ User not found',
+        'no_operations' => '❗ No operations found',
         'no_category' => 'No category',
         'period' => 'Period: :from - :to',
         'total_operations' => 'Total operations',

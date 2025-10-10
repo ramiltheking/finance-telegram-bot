@@ -13,7 +13,8 @@ use Carbon\Carbon;
 
 class Confirm extends Webhook
 {
-    public function run() {
+    public function run()
+    {
         $callback = $this->request->input('callback_query');
         $data = json_decode($callback['data'], true);
 
@@ -37,8 +38,9 @@ class Confirm extends Webhook
         $user = User::where('telegram_id', $this->chat_id)->first();
         $userSettings = $user->settings;
         $userLang = $userSettings?->language ?? 'ru';
-        $categoryService = new CategoryService();
+        $userCurrency = $userSettings->currency ?? 'KZT';
 
+        $categoryService = new CategoryService();
         $categoryName = $categoryService->getCategoryName($operation, $userLang);
 
         $text = __('messages.record_added') . "\n\n";
@@ -51,7 +53,27 @@ class Confirm extends Webhook
             $text .= __('messages.description_label', ['description' => $operation->description]) . "\n";
         }
         if ($operation->occurred_at) {
-            $text .= __('messages.date_label', ['date' => Carbon::parse($operation->occurred_at)->format('d.m.Y')]) . "\n";
+            Carbon::setLocale($userLang);
+            $formattedDate = Carbon::parse($operation->occurred_at)->isoFormat('D MMM. YYYY');
+            $text .= __('messages.date_label', ['date' => $formattedDate]) . "\n";
+        }
+
+        $operations = Operation::where('user_id', $user->telegram_id)
+            ->where('occurred_at', '>=', now()->subDays(30))
+            ->where('status', 'confirmed')
+            ->orderByDesc('occurred_at')
+            ->get();
+
+        if ($operations) {
+            $income = $operations->where('type', 'income')->sum('amount');
+            $expense = $operations->where('type', 'expense')->sum('amount');
+            $balance = $income - $expense;
+
+            if ($balance > 0) {
+                $text .= trans('messages.balance_positive', ['amount' => number_format($balance, 2, '.', ' '), 'currency' => $userCurrency]);
+            } elseif ($balance < 0) {
+                $text .= trans('messages.balance_negative', ['amount' => number_format(abs($balance), 2, '.', ' '), 'currency' => $userCurrency]);
+            }
         }
 
         Telegram::editButtons($this->chat_id, $text, null, $messageId)->send();

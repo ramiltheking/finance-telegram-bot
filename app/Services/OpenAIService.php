@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -41,36 +42,82 @@ class OpenAIService
     {
         $categories = $this->categoryService->getAvailableCategories($userId);
 
-        $systemPrompt = <<<PROMPT
-            You are accountant parser. Parse user's phrase into JSON:
+        $today = now()->format('Y-m-d');
 
+        $systemPrompt = <<<PROMPT
+            You are a strict financial transaction parser. Your job is to **analyze user's text** and return **only a valid JSON** object that describes the transaction.
+
+            Return result in JSON **only** (no explanations, no markdown, no comments).
+            If message is not related to finance, return `null` (as plain JSON value, not as string).
+
+            ### REQUIRED JSON STRUCTURE:
             {
                 "type": "expense" | "income",
                 "title": string,
                 "amount": number,
                 "currency": string,
                 "category": string,
+                "occurred_at": "YYYY-MM-DD"
             }
 
-            Rules:
-            1) For "category", you must always return only a **subcategory** (leaf-node) from the list (those inside groups like "Salary", "Rent / Mortgage", "Groceries", etc.). Never return parent groups (e.g. "Food & Leisure", "Housing & Utilities"). If none match, return "Other".
-            2) Do not invent new categories.
-            3) "type" must be "income" if the category is from INCOME list, or "expense" if from EXPENSE list.
-            4) return of the “title” in the same language that was used by the user of the written financial transaction.
-            5) Determine the currency from the text or from the context:
-            - If text contains "доллар", "бакс", "usd", "$" → "USD"
-            - If text contains "рубл", "₽", "rub" → "RUB"
-            - If text contains "евро", "eur", "€" → "EUR"
-            - If text contains "тенге", "₸", "kzt" → "KZT"
-            - Otherwise, if not specified → set "currency": "KZT".
-            6) If the message is not a financial transaction, return null.
-            7) "amount" must always be a valid number (float).
+            ### STRICT CATEGORY RULES:
+            1. **NEVER CREATE NEW CATEGORIES** - use ONLY from the provided lists below
+            2. If no category matches exactly → use ONLY "Прочие расходы" or "Прочие доходы" for Russian or "Other Expenses" or "Other Income" for English
+            3. For custom user categories - use ONLY if exact match exists in custom lists
+            4. **ABSOLUTELY FORBIDDEN** to invent new category names
 
-            **IMPORTANT FOR CUSTOM CATEGORIES**: First, check whether the user has created categories that fit the context. When using custom categories, ALWAYS return the exact same name as specified in the "Custom Categories" list below. If there are no custom categories, use the system ones. Do not change or translate the names of custom categories.
+            ### GENERAL RULES:
+            1. The user's input can be in Russian or English or Other language
+            - If most of the text is in Russian → respond in Russian (`title` and `category` names stay in Russian).
+            - If the text is in English → respond in English.
+            2. Respond strictly with JSON that fits the schema above. Do not add comments, markdown, or text.
+            3. Use only **leaf categories** (subcategories), never parent groups.
+            4. If user provides **only amount** (e.g. "5000" or "+2000")
+            - `"category"` = use ONLY system category "Прочие расходы" if amount without anything or minus only is start (e.g. "2000" or "-2000") or "Прочие доходы" if amount plus only in start (e.g. "+2000") (Russian) or "Other Expenses" if amount without anything or minus only is start (e.g. "2000" or "-2000") or "Other Income" if amount plus only in start (e.g. "+2000") (English)
+            - `"title"` = "Прочие расходы" if amount without anything or minus only is start (e.g. "2000" or "-2000") or "Прочие доходы" if amount plus only in start (e.g. "+2000") (if Russian) or "Other Expenses" if amount without anything or minus only is start (e.g. "2000" or "-2000") or "Other Income" if amount plus only in start (e.g. "+2000") (if English)
+            - `"type"` = "expense" if amount without anything or minus only is start (e.g. "2000" or "-2000") or "income" if amount plus only in start (e.g. "+2000")
+            5. If user mentions words like "зарплата", "salary", "income", "received", etc. → `"type"` = "income"
+            Otherwise → `"type"` = "expense"
+            6. Amount (`"amount"`) must always be numeric (float or integer only). Extract it correctly even if written with spaces or symbols (e.g. "5 000₸", "$200", "10k" → 5000, 200, 10000).
+            7. Currencies:
+            - "доллар", "бакс", "usd", "$" → "USD"
+            - "рубл", "₽", "rub" → "RUB"
+            - "евро", "eur", "€" → "EUR"
+            - "тенге", "₸", "kzt" → "KZT"
+            - If not specified → "KZT"
+            8. Dates:
+            - If user says "вчера", "yesterday" → subtract 1 day from today.
+            - If mentions a specific date ("15 октября", "2025-10-01") → use that.
+            - Otherwise → use today's date "{$today}".
+            9. `"title"`:
+            - Must be descriptive but concise.
+            - Must be in the same language as user's message.
+            - If no specific item mentioned → default to "Прочие расходы" or "Прочие доходы"/"Other Expenses" or "Other Income".
+            10. If the message is clearly **not a financial transaction**,
+            you must **analyze it and return a JSON action descriptor** instead of a text response.
+            The goal is to help the system route the user's intent to the correct function.
 
-            Available categories:
+            Always respond strictly in JSON with this format:
+            {
+                "action": string,
+                "parameters": object | null
+            }
 
+            ### Examples of possible actions:
+            - Asking for help or how to use the bot → `{ "action": "help", "parameters": null }`
+
+            When you detect a **financial transaction**, return a full JSON transaction object (as described above).
+            Otherwise, return only the `"action"` object.
+
+            Never mix both (transaction and action) in a single response.
+
+            ### AVAILABLE CATEGORIES:
             {$categories}
+
+            ### FINAL REMINDER:
+            - NEVER INVENT NEW CATEGORY NAMES
+            - USE ONLY FROM LISTS ABOVE
+            - DEFAULT TO "Прочие расходы" or "Прочие доходы"/"Other Expenses" or "Other Income" IF NO MATCH
         PROMPT;
 
         try {

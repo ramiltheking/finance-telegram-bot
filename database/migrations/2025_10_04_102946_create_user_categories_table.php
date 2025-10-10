@@ -16,9 +16,11 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('telegram_id')->on('users')->cascadeOnDelete();
             $table->enum('type', ['INCOME', 'EXPENSE']);
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('title')->nullable();
             $table->timestamps();
+
+            $table->unique(['user_id', 'name']);
         });
     }
 

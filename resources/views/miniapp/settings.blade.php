@@ -1038,6 +1038,12 @@
             const name = nameInput.value.trim();
             const title = titleInput.value.trim();
 
+            if (!name) {
+                showToast('Название категории не может быть пустым', 'error');
+                nameInput.focus();
+                return;
+            }
+
             if (!['INCOME', 'EXPENSE'].includes(type)) {
                 showToast(window.i18n.invalid_category_type || 'Некорректный тип категории', 'error');
                 return;
@@ -1096,9 +1102,10 @@
                 } else {
                     if (data.error === 'category_exists') {
                         showToast(window.i18n.category_exists || 'Категория с таким названием уже существует', 'error');
+                    } else if (data.error === 'validation_error') {
+                        showToast(data.message || 'Ошибка валидации данных', 'error');
                     } else {
-                        showToast(data.error || (window.i18n.save_category_error || 'Ошибка сохранения категории'),
-                            'error');
+                        showToast(data.error || (window.i18n.save_category_error || 'Ошибка сохранения категории'), 'error');
                     }
                 }
             } catch (error) {

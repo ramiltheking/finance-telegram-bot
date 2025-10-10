@@ -79,6 +79,14 @@ class CategoriesSeeder extends Seeder
                         ['name_en' => 'Loans Received', 'name_ru' => 'Полученные займы', 'slug' => 'loans-received'],
                     ],
                 ],
+                [
+                    'name_en' => 'Other',
+                    'name_ru' => 'Прочее',
+                    'slug'    => 'other',
+                    'children' => [
+                        ['name_en' => 'Other Income', 'name_ru' => 'Прочие доходы', 'slug' => 'other-income'],
+                    ],
+                ],
             ],
             'EXPENSE' => [
                 [
@@ -186,6 +194,7 @@ class CategoriesSeeder extends Seeder
                     'name_ru' => 'Прочее',
                     'slug'    => 'other',
                     'children' => [
+                        ['name_en' => 'Other Expenses', 'name_ru' => 'Прочие расходы', 'slug' => 'other-expenses'],
                         ['name_en' => 'Subscriptions', 'name_ru' => 'Подписки', 'slug' => 'subscriptions'],
                         ['name_en' => 'Online Services', 'name_ru' => 'Онлайн-сервисы', 'slug' => 'online-services'],
                         ['name_en' => 'Business Expenses', 'name_ru' => 'Бизнес-расходы', 'slug' => 'business-expenses'],
@@ -199,22 +208,26 @@ class CategoriesSeeder extends Seeder
 
         foreach ($categories as $type => $groups) {
             foreach ($groups as $group) {
-                $parent = Category::create([
-                    'parent_id' => null,
-                    'type'      => $type,
-                    'name_en'   => $group['name_en'],
-                    'name_ru'   => $group['name_ru'],
-                    'slug'      => $group['slug'],
-                ]);
+                $parent = Category::updateOrCreate(
+                    ['slug' => $group['slug']],
+                    [
+                        'parent_id' => null,
+                        'type'      => $type,
+                        'name_en'   => $group['name_en'],
+                        'name_ru'   => $group['name_ru'],
+                    ]
+                );
 
                 foreach ($group['children'] as $child) {
-                    Category::create([
-                        'parent_id' => $parent->id,
-                        'type'      => $type,
-                        'name_en'   => $child['name_en'],
-                        'name_ru'   => $child['name_ru'],
-                        'slug'      => $child['slug'],
-                    ]);
+                    Category::updateOrCreate(
+                        ['slug' => $child['slug']],
+                        [
+                            'parent_id' => $parent->id,
+                            'type'      => $type,
+                            'name_en'   => $child['name_en'],
+                            'name_ru'   => $child['name_ru'],
+                        ]
+                    );
                 }
             }
         }

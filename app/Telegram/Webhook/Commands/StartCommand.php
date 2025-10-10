@@ -8,6 +8,7 @@ use App\Telegram\Helpers\InlineButton;
 use App\Telegram\Webhook\Webhook;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use App\Telegram\Helpers\KeyboardButton;
 
 class StartCommand extends Webhook
 {
@@ -98,11 +99,22 @@ class StartCommand extends Webhook
         $first_name = $this->request->input('message')['from']['first_name'];
         $miniapp_url = env('APP_URL') . '/miniapp';
 
+        KeyboardButton::clear();
+        KeyboardButton::add('🚀 Старт', 1);
+        KeyboardButton::add('🪙 Баланс', 2);
+        KeyboardButton::add('📋 Список операций', 2);
+        KeyboardButton::add('📅 Недельный отчет', 3);
+        KeyboardButton::add('📊 Полный отчет', 3);
+        KeyboardButton::add('💰 Подписка', 4);
+
+        Telegram::inlineButtons($this->chat_id, trans('messages.welcome', ['name' => $first_name]), KeyboardButton::$buttons)->send();
+
         $buttons = InlineButton::create()->add(trans('commands.start.buttons.work_info', [], $this->userLang), 'WorkInfo', [], 1)
-                   ->add(trans('commands.start.buttons.tarifs', [], $this->userLang), 'Tarifs', [], 2)
-                   ->web_app(trans('commands.start.buttons.statistics', [], $this->userLang), $miniapp_url, 3)
+                   ->add("Возможности бота", 'Possibilities', [], 2)
+                   ->add(trans('commands.start.buttons.tarifs', [], $this->userLang), 'Tarifs', [], 3)
+                   ->web_app(trans('commands.start.buttons.statistics', [], $this->userLang), $miniapp_url, 4)
                    ->get();
 
-        return Telegram::inlineButtons($this->chat_id, trans('messages.welcome', ['name' => $first_name], $this->userLang), $buttons)->send();
+        return Telegram::inlineButtons($this->chat_id, trans('messages.welcome_introduction', [], $this->userLang), $buttons)->send();
     }
 }

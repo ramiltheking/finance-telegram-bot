@@ -37,6 +37,18 @@ class Realization
         '/refund' => RefundCommand::class,
     ];
 
+    protected const ButtonCommands = [
+        '🪙 Баланс' => BalanceCommand::class,
+        '📋 Список операций' => ListCommand::class,
+        '📅 Недельный отчет' => ReportCommand::class,
+        '📊 Полный отчет' => FullReportCommand::class,
+        '🗑️ Удалить последнюю' => DeleteLastCommand::class,
+        '✏️ Редактировать' => EditCommand::class,
+        '🔔 Напоминания' => RemindCommand::class,
+        '💰 Подписка' => SubscribeCommand::class,
+        '🚀 Старт' => StartCommand::class,
+    ];
+
     public function take(Request $request)
     {
         $user = null;
@@ -70,6 +82,11 @@ class Realization
                 $command_name = explode(' ', $request->input('message')['text'])[0];
                 return self::Commands[$command_name] ?? false;
             }
+        }
+        elseif ($request->input('message.text') && isset(self::ButtonCommands[$request->input('message.text')]))
+        {
+            $buttonText = $request->input('message.text');
+            return self::ButtonCommands[$buttonText];
         }
         elseif ($request->input('callback_query'))
         {

@@ -9,6 +9,7 @@ use App\Models\UserCategory;
 use App\Services\CategoryService;
 use App\Services\OpenAIService;
 use App\Telegram\Helpers\InlineButton;
+use App\Telegram\Helpers\KeyboardButton;
 use App\Telegram\Webhook\Webhook;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -58,7 +59,15 @@ class VoiceMessage extends Webhook
         $operation = $openai->parseOperationFromText($text, $this->chat_id);
 
         if (!$operation) {
-            Telegram::message($this->chat_id, __('messages.operation_parse_failed'), $this->message_id)->send();
+            KeyboardButton::clear();
+            KeyboardButton::add('🚀 Старт', 1);
+            KeyboardButton::add('🪙 Баланс', 2);
+            KeyboardButton::add('📋 Список операций', 2);
+            KeyboardButton::add('📅 Недельный отчет', 3);
+            KeyboardButton::add('📊 Полный отчет', 3);
+            KeyboardButton::add('💰 Подписка', 4);
+
+            Telegram::inlineButtons($this->chat_id, __('messages.operation_parse_failed'), KeyboardButton::$buttons)->send();
             return ['error' => 'operation_parse_failed', 'text' => $text];
         }
 
@@ -122,7 +131,7 @@ class VoiceMessage extends Webhook
             'category'      => $categoryName,
             'category_type' => $categoryType,
             'description'   => $operation['title'] ?? null,
-            'occurred_at'   => now(),
+            'occurred_at'   => $operation['occurred_at'] ?? now(),
             'meta'          => null,
             'status'        => 'pending',
             'created_at'    => now(),

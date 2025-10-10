@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'welcome' => "👋 Welcome, :name!\n\n" .
-    "<b>🤖 I'm your personal finance assistant - Finly</b>\n\n" .
+    'welcome' => "👋 Welcome, :name!",
+    'introduction' => "<b>🤖 I'm your personal finance assistant - Finly</b>\n\n" .
     "<b>✨ My key Features:</b>\n" .
     "📝 Smart transaction tracking via text or voice\n" .
     "📊 Detailed analytics and visualization\n" .
@@ -19,12 +19,14 @@ return [
     // используется в файлах Text.php & VoiceMessage.php
     'audio_message_exceeds' => '❗ The audio message exceeds 20 seconds. Please send a shorter message.',
     'audio_message_failed' => '❗ Could not recognize the voice message',
-    'operation_parse_failed' => '❗ Could not recognize the voice message',
+    'operation_parse_failed' => "❗ Could not recognize the operation.\n\n🤖 I only understand <b>financial transactions</b>, for example:\n• «Received salary of 150000 KZT»\n• «Spent 5000 on lunch»\n• «Transferred 20000 for rent»\n\n🎯 Use the buttons below for other actions:",
     'user_not_found' => '❗ User not found.',
     'income_text' => '✅ Add record: Received :amount :currency — :title',
     'expense_text' => '✅ Add record: Spent :amount :currency — :title',
     'confirm' => '✅ Confirm',
     'decline' => '❌ Decline',
+    'balance_positive' => '📈 +:amount :currency',
+    'balance_negative' => '📉 -:amount :currency',
 
     'record_not_found' => '❌ Record not found',
     'record_added' => '✅ Record added:',
