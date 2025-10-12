@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static Message editButtons(mixed $chat_id, string $text, ?array $buttons, int $message_id)
  * @method static Message editMessageMedia(mixed $chat_id, string $media, string $type = 'photo', ?string $caption = null, ?array $buttons = null, int $message_id)
  * @method static Message deleteMessage(mixed $chat_id, int $message_id)
+ * @method static Message answerCallbackQuery(string $callbackQueryId, array $params = [])
  * @method static File document(mixed $chat_id, $file, string $filename, $reply_id = null)
  * @method static File photo(mixed $chat_id, $file, string $filename, $reply_id = null)
  * @method static File groupPhoto(mixed $chat_id, array $file_url, $reply_id = null)

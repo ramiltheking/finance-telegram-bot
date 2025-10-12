@@ -7,7 +7,7 @@ use App\Telegram\Helpers\InlineButton;
 use App\Telegram\Webhook\Webhook;
 use App\Models\User;
 
-class FinancialAccounting extends Webhook
+class FinancialAnalytics extends Webhook
 {
     private $userLang = 'ru';
 
@@ -15,10 +15,15 @@ class FinancialAccounting extends Webhook
     {
         $this->detectUserLanguage();
 
+        $miniapp_url = env('APP_URL') . '/miniapp';
+
         $buttons = InlineButton::create()
-            ->add("❇️⬜⬜", "Possibilities", [], 1)
-            ->add(__('buttons.menu'), "Possibilities", [], 2)
-            ->add(__('buttons.next'), "FinancialAnalytics", [], 2)
+            ->add("🟩❇️⬜", "Possibilities", [], 1)
+            ->add(__('buttons.weekly_report'), "RedirectReportCommand", [], 2)
+            ->add(__('buttons.full_report'), "RedirectFullReportCommand", [], 2)
+            ->web_app(__('buttons.statistics'), $miniapp_url, 3)
+            ->add(__('buttons.back'), "FinancialAccounting", [], 4)
+            ->add(__('buttons.next'), "CustomCategory", [], 4)
             ->get();
 
         $photoId = null;
@@ -28,9 +33,9 @@ class FinancialAccounting extends Webhook
             // $photoId,
             // 'photo',
             __('messages.financial_tracking_title') .
-            __('messages.financial_tracking_howto') .
-            __('messages.financial_tracking_tips') .
-            __('messages.financial_tracking_edit'),
+            __('messages.financial_analytics_weekly') .
+            __('messages.financial_analytics_full') .
+            __('messages.financial_analytics_cta'),
             $buttons,
             $this->message_id,
         )->send();

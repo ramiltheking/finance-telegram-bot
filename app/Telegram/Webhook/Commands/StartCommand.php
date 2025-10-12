@@ -90,7 +90,8 @@ class StartCommand extends Webhook
         }
     }
 
-    private function handleHelpStart() {
+    private function handleHelpStart()
+    {
         return;
     }
 
@@ -100,20 +101,20 @@ class StartCommand extends Webhook
         $miniapp_url = env('APP_URL') . '/miniapp';
 
         KeyboardButton::clear();
-        KeyboardButton::add('🚀 Старт', 1);
-        KeyboardButton::add('🪙 Баланс', 2);
-        KeyboardButton::add('📋 Список операций', 2);
-        KeyboardButton::add('📅 Недельный отчет', 3);
-        KeyboardButton::add('📊 Полный отчет', 3);
-        KeyboardButton::add('💰 Подписка', 4);
+        KeyboardButton::add(__('buttons.start'), 1);
+        KeyboardButton::add(__('buttons.balance'), 2);
+        KeyboardButton::add(__('buttons.operations_list'), 2);
+        KeyboardButton::add(__('buttons.weekly_report'), 3);
+        KeyboardButton::add(__('buttons.full_report'), 3);
+        KeyboardButton::add(__('buttons.subscription'), 4);
 
         Telegram::inlineButtons($this->chat_id, trans('messages.welcome', ['name' => $first_name]), KeyboardButton::$buttons)->send();
 
         $buttons = InlineButton::create()->add(trans('commands.start.buttons.work_info', [], $this->userLang), 'WorkInfo', [], 1)
-                   ->add("Возможности бота", 'Possibilities', [], 2)
-                   ->add(trans('commands.start.buttons.tarifs', [], $this->userLang), 'Tarifs', [], 3)
-                   ->web_app(trans('commands.start.buttons.statistics', [], $this->userLang), $miniapp_url, 4)
-                   ->get();
+            ->add(trans('commands.start.buttons.bot_capabilities', [], $this->userLang), 'Possibilities', [], 2)
+            ->add(trans('commands.start.buttons.tarifs', [], $this->userLang), 'Tarifs', [], 3)
+            ->web_app(trans('commands.start.buttons.statistics', [], $this->userLang), $miniapp_url, 4)
+            ->get();
 
         return Telegram::inlineButtons($this->chat_id, trans('messages.welcome_introduction', [], $this->userLang), $buttons)->send();
     }

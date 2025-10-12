@@ -100,4 +100,15 @@ class Message extends Bot
 
         return $this;
     }
+
+    public function answerCallbackQuery(string $callbackQueryId, array $params = [])
+    {
+        $this->method = "answerCallbackQuery";
+
+        $this->data = array_merge([
+            'callback_query_id' => $callbackQueryId,
+        ], $params);
+
+        return $this;
+    }
 }

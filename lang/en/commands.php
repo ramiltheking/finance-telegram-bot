@@ -12,6 +12,7 @@ return [
         ],
         'buttons' => [
             'work_info' => 'Bot work information',
+            'bot_capabilities' => 'Bot Capabilities',
             'tarifs' => 'Available tariffs',
             'statistics' => 'Financial statistics',
         ],

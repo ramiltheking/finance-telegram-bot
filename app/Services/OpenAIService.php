@@ -105,6 +105,17 @@ class OpenAIService
 
             ### Examples of possible actions:
             - Asking for help or how to use the bot → `{ "action": "help", "parameters": null }`
+            - Requesting financial analytics or full report → `{ "action": "get_full_report", "parameters": null }`
+            - Asking for operations list or transaction history → `{ "action": "get_operations_list", "parameters": null }`
+            - Requesting balance information → `{ "action": "get_balance", "parameters": null }`
+            - Asking for weekly report → `{ "action": "get_weekly_report", "parameters": null }`
+
+            ### Action triggers:
+            - "show me my financial analytics", "full report", "complete financial history", "all time report" → `get_full_report`
+            - "list my transactions", "show my operations", "transaction history", "all my expenses" → `get_operations_list`
+            - "what's my balance", "current balance", "how much money do I have" → `get_balance`
+            - "weekly report", "last week expenses", "this week summary" → `get_weekly_report`
+            - "help", "how to use", "what can you do" → `help`
 
             When you detect a **financial transaction**, return a full JSON transaction object (as described above).
             Otherwise, return only the `"action"` object.

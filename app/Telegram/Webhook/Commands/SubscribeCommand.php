@@ -11,6 +11,8 @@ use App\Telegram\Helpers\InlineButton;
 
 class SubscribeCommand extends Webhook
 {
+    private $userLang = 'ru';
+
     private $subscriptionPlans = [
         'monthly' => [
             'price' => 250,
@@ -28,6 +30,8 @@ class SubscribeCommand extends Webhook
 
     public function run()
     {
+        $this->detectUserLanguage();
+
         $userId = $this->chat_id;
         $text = $this->request->input('message.text');
         $args = explode(' ', $text);
@@ -41,19 +45,16 @@ class SubscribeCommand extends Webhook
             'provider_token_set' => !empty(env('TELEGRAM_PAYMENT_PROVIDER_TOKEN')),
         ]);
 
-        $user = User::where('telegram_id', $userId)->first();
-        $userLang = $user?->settings?->language ?? 'ru';
-
         $plan = $this->subscriptionPlans[$planType];
         $payload = TelegramPaymentService::createSubscriptionPayload($userId, $planType);
 
         $invoiceResponse = Telegram::createInvoiceLink(
-            trans("commands.subscribe.{$planType}_title", [], $userLang),
-            trans("commands.subscribe.{$planType}_description", ['days' => $plan['days']], [], $userLang),
+            trans("commands.subscribe.{$planType}_title", [], $this->userLang),
+            trans("commands.subscribe.{$planType}_description", ['days' => $plan['days']], [], $this->userLang),
             $payload,
             [
                 [
-                    'label' => trans("commands.subscribe.{$planType}_label", [], $userLang),
+                    'label' => trans("commands.subscribe.{$planType}_label", [], $this->userLang),
                     'amount' => $plan['price']
                 ]
             ],
@@ -64,18 +65,31 @@ class SubscribeCommand extends Webhook
         if ($invoiceResponse['ok']) {
             $invoiceUrl = $invoiceResponse['result'];
 
-            $message = trans("commands.subscribe.{$planType}_title", [], $userLang) . "\n\n";
-            $message .= trans("actions.tarifs.feature_unlimited", [], $userLang) . "\n";
-            $message .= trans("actions.tarifs.feature_voice", [], $userLang) . "\n";
-            $message .= trans("actions.tarifs.feature_analytics", [], $userLang) . "\n";
-            $message .= trans("actions.tarifs.feature_reminders", [], $userLang) . "\n";
-            $message .= trans("actions.tarifs.feature_export", [], $userLang) . "\n\n";
-            $message .= trans("actions.tarifs.payment_prompt", [], $userLang);
+            $message = trans("commands.subscribe.{$planType}_title", [], $this->userLang) . "\n\n";
+            $message .= trans("actions.tarifs.feature_unlimited", [], $this->userLang) . "\n";
+            $message .= trans("actions.tarifs.feature_voice", [], $this->userLang) . "\n";
+            $message .= trans("actions.tarifs.feature_analytics", [], $this->userLang) . "\n";
+            $message .= trans("actions.tarifs.feature_reminders", [], $this->userLang) . "\n";
+            $message .= trans("actions.tarifs.feature_export", [], $this->userLang) . "\n\n";
+            $message .= trans("actions.tarifs.payment_prompt", [], $this->userLang);
 
-            $buttons = InlineButton::create()->link(trans('actions.tarifs.pay_button', [], $userLang), $invoiceUrl)->get();
-            Telegram::inlineButtons($this->chat_id, $message, $buttons)->send();
+            $buttons = InlineButton::create()->link(trans('actions.tarifs.pay_button', [], $this->userLang), $invoiceUrl, 1)->add(__('buttons.back'), "BackStart", [], 2)->get();
+
+            $isCallbackQuery = $this->request->input('callback_query');
+
+            if ($isCallbackQuery) {
+                Telegram::editButtons($this->chat_id, $message, $buttons, $this->message_id)->send();
+            } else {
+                Telegram::inlineButtons($this->chat_id, $message, $buttons)->send();
+            }
         } else {
-            Telegram::message($this->chat_id, trans('commands.subscribe.invoice_failed', [], $userLang))->send();
+            Telegram::message($this->chat_id, trans('commands.subscribe.invoice_failed', [], $this->userLang))->send();
         }
+    }
+
+    private function detectUserLanguage()
+    {
+        $user = User::where('telegram_id', $this->chat_id)->first();
+        $this->userLang = $user?->settings?->language ?? 'ru';
     }
 }

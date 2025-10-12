@@ -85,7 +85,7 @@ class ReportCommand extends Webhook
         ]) . "\n";
 
         $balance = $totalClaimed - $totalSpent;
-        $balanceIcon = $balance > 0 ? '💹' : ($balance < 0 ? '🔻' : '⚖️');
+        $balanceIcon = $balance > 0 ? '📈' : ($balance < 0 ? '📉' : '❇️');
         $balanceText = $balance > 0
             ? trans('commands.report.balance_positive', ['amount' => number_format($balance, 2, '.', ' ')])
             : ($balance < 0

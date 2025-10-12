@@ -13,37 +13,38 @@ class CustomCategory extends Webhook
 
     public function run()
     {
-        $user = User::where('telegram_id', $this->chat_id)->first();
-        $userLang = $user?->settings?->language ?? 'ru';
+        $this->detectUserLanguage();
+
+        $miniapp_settings_url = env('APP_URL') . '/miniapp/settings';
 
         $buttons = InlineButton::create()
-            ->add("🟩🟩", "Possibilities", [], 1)
-            ->add("← Назад", "FinancialAccounting", [], 2)
-            ->add("⌂ Меню", "Possibilities", [], 2)
+            ->add("🟩🟩❇️", "Possibilities", [], 1)
+            ->web_app(__('buttons.add_category'), $miniapp_settings_url, 2)
+            ->add(__('buttons.back'), "FinancialAnalytics", [], 3)
+            ->add(__('buttons.menu'), "Possibilities", [], 3)
             ->get();
 
-        $photoId = "AgACAgIAAxkBAAII0WjnlESlgr5f4WPFz4WfYnzObB8fAAKhAzIbuZg4S_V-7vCRfLtEAQADAgADeQADNgQ";
+        $photoId = null;
 
-        Telegram::editMessageMedia(
+        Telegram::editButtons(
             $this->chat_id,
-            $photoId,
-            'photo',
-            "🏷️ <b>Персональные категории</b>\n\n" .
-            "✨ <b>Зачем нужны:</b>\n" .
-            "• Точный учет по вашим привычкам\n" .
-            "• Детальная аналитика расходов\n" .
-            "• Удобная группировка операций\n\n" .
-            "📱 <b>Как добавить:</b>\n" .
-            "1. Откройте Mini App бота\n" .
-            "2. Перейдите в «Настройки»\n" .
-            "3. Выберите «Мои категории»\n" .
-            "4. Нажмите «+ Добавить категорию»\n\n" .
-            "💡 <b>Советы:</b>\n" .
-            "• Делайте названия простыми, чтобы Вам было удобнее воспользоваться ими;\n" .
-            "• Корректно указывайте тип добавляемой Вами категории, чтобы не допустить ошибки в подсчетах;\n" .
-            "• Персональные категории дают Вам больше возможностей, чем базовые категории – воспользуйте ими, чтобы лучше анализировать свои финансы.",
+            // $photoId,
+            // 'photo',
+            __('messages.personal_categories_title') .
+            __('messages.personal_categories_description') .
+            __('messages.personal_categories_why') .
+            __('messages.personal_categories_how') .
+            __('messages.personal_categories_tips') .
+            __('messages.personal_categories_grouping') .
+            __('messages.personal_categories_types'),
             $buttons,
             $this->message_id,
         )->send();
+    }
+
+    private function detectUserLanguage()
+    {
+        $user = User::where('telegram_id', $this->chat_id)->first();
+        $this->userLang = $user?->settings?->language ?? 'ru';
     }
 }

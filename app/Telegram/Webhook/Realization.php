@@ -3,6 +3,7 @@
 namespace App\Telegram\Webhook;
 
 use App\Facades\Telegram;
+use App\Models\User;
 use App\Services\UserService;
 use App\Telegram\Webhook\Commands\BalanceCommand;
 use App\Telegram\Webhook\Commands\DeleteCommand;
@@ -38,15 +39,15 @@ class Realization
     ];
 
     protected const ButtonCommands = [
-        '🪙 Баланс' => BalanceCommand::class,
-        '📋 Список операций' => ListCommand::class,
-        '📅 Недельный отчет' => ReportCommand::class,
-        '📊 Полный отчет' => FullReportCommand::class,
-        '🗑️ Удалить последнюю' => DeleteLastCommand::class,
-        '✏️ Редактировать' => EditCommand::class,
-        '🔔 Напоминания' => RemindCommand::class,
-        '💰 Подписка' => SubscribeCommand::class,
-        '🚀 Старт' => StartCommand::class,
+        'balance' => BalanceCommand::class,
+        'operations_list' => ListCommand::class,
+        'weekly_report' => ReportCommand::class,
+        'full_report' => FullReportCommand::class,
+        'delete_last' => DeleteLastCommand::class,
+        'edit' => EditCommand::class,
+        'reminders' => RemindCommand::class,
+        'subscription' => SubscribeCommand::class,
+        'start' => StartCommand::class,
     ];
 
     public function take(Request $request)
@@ -83,11 +84,6 @@ class Realization
                 return self::Commands[$command_name] ?? false;
             }
         }
-        elseif ($request->input('message.text') && isset(self::ButtonCommands[$request->input('message.text')]))
-        {
-            $buttonText = $request->input('message.text');
-            return self::ButtonCommands[$buttonText];
-        }
         elseif ($request->input('callback_query'))
         {
             $data = json_decode($request->input('callback_query')['data']);
@@ -100,11 +96,34 @@ class Realization
             }
             return VoiceMessage::class;
         }
-        elseif ($request->input('message'))
-        {
+        if ($request->input('message.text')) {
+            $buttonText = $request->input('message.text');
+
+            $user = User::where('telegram_id', $request->input('message.from.id'))->first();
+            $userLanguage = $user?->settings?->language ?? 'ru';
+
+            $translatedButtons = [
+                'balance' => __('buttons.balance', [], $userLanguage),
+                'operations_list' => __('buttons.operations_list', [], $userLanguage),
+                'weekly_report' => __('buttons.weekly_report', [], $userLanguage),
+                'full_report' => __('buttons.full_report', [], $userLanguage),
+                'delete_last' => __('buttons.delete_last', [], $userLanguage),
+                'edit' => __('buttons.edit', [], $userLanguage),
+                'reminders' => __('buttons.reminders', [], $userLanguage),
+                'subscription' => __('buttons.subscription', [], $userLanguage),
+                'start' => __('buttons.start', [], $userLanguage),
+            ];
+
+            $commandKey = array_search($buttonText, $translatedButtons);
+
+            if ($commandKey && isset(self::ButtonCommands[$commandKey])) {
+                return self::ButtonCommands[$commandKey];
+            }
+
             if (!$user || !UserService::hasAccess($user)) {
                 return '\App\Telegram\Webhook\Actions\EndTarif';
             }
+
             return Text::class;
         }
         else

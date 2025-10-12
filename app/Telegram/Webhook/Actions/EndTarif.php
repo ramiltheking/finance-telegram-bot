@@ -10,6 +10,8 @@ use App\Models\User;
 
 class EndTarif extends Webhook
 {
+    private $userLang = 'ru';
+
     public function run()
     {
         // $priceInKZT = '2500.00';
@@ -19,18 +21,17 @@ class EndTarif extends Webhook
         // InlineButton::web_app("💰 Оплатить {$tariffName} тариф", $url, 1);
         // Telegram::inlineButtons($this->chat_id, "⏳ У вас закончился пробный период или подписка.\n\nПожалуйста, оплатите для дальнейшего использования.\n\n📦 Тариф: <b>{$tariffName}</b> — {$priceInKZT} ₸ в месяц", InlineButton::$buttons)->send();
 
-        $user = User::where('telegram_id', $this->chat_id)->first();
-        $userLang = $user?->settings?->language ?? 'ru';
+        $this->detectUserLanguage();
 
         $payload = TelegramPaymentService::createSubscriptionPayload($this->chat_id, 'monthly');
 
         $invoiceResponse = Telegram::createInvoiceLink(
-            trans('actions.end_tarif.invoice_title', [], $userLang),
-            trans('actions.end_tarif.invoice_description', [], $userLang),
+            trans('actions.end_tarif.invoice_title', [], $this->userLang),
+            trans('actions.end_tarif.invoice_description', [], $this->userLang),
             $payload,
             [
                 [
-                    'label' => trans('actions.end_tarif.invoice_label', [], $userLang),
+                    'label' => trans('actions.end_tarif.invoice_label', [], $this->userLang),
                     'amount' => 250
                 ]
             ],
@@ -40,21 +41,27 @@ class EndTarif extends Webhook
         if ($invoiceResponse['ok']) {
             $invoiceUrl = $invoiceResponse['result'];
 
-            $message = trans('actions.end_tarif.expired_message', [], $userLang) . "\n";
-            $message .= trans('actions.end_tarif.payment_request', [], $userLang) . "\n\n";
-            $message .= trans('actions.tarifs.title', [], $userLang) . "\n\n";
-            $message .= trans('actions.tarifs.feature_unlimited', [], $userLang) . "\n";
-            $message .= trans('actions.tarifs.feature_voice', [], $userLang) . "\n";
-            $message .= trans('actions.tarifs.feature_analytics', [], $userLang) . "\n";
-            $message .= trans('actions.tarifs.feature_reminders', [], $userLang) . "\n";
-            $message .= trans('actions.tarifs.feature_export', [], $userLang) . "\n\n";
-            $message .= trans('actions.tarifs.payment_prompt', [], $userLang);
+            $message = trans('actions.end_tarif.expired_message', [], $this->userLang) . "\n";
+            $message .= trans('actions.end_tarif.payment_request', [], $this->userLang) . "\n\n";
+            $message .= trans('actions.tarifs.title', [], $this->userLang) . "\n\n";
+            $message .= trans('actions.tarifs.feature_unlimited', [], $this->userLang) . "\n";
+            $message .= trans('actions.tarifs.feature_voice', [], $this->userLang) . "\n";
+            $message .= trans('actions.tarifs.feature_analytics', [], $this->userLang) . "\n";
+            $message .= trans('actions.tarifs.feature_reminders', [], $this->userLang) . "\n";
+            $message .= trans('actions.tarifs.feature_export', [], $this->userLang) . "\n\n";
+            $message .= trans('actions.tarifs.payment_prompt', [], $this->userLang);
 
-            $buttons = InlineButton::create()->link(trans('actions.end_tarif.pay_button', [], $userLang), $invoiceUrl)->get();
+            $buttons = InlineButton::create()->link(trans('actions.end_tarif.pay_button', [], $this->userLang), $invoiceUrl)->get();
             Telegram::inlineButtons($this->chat_id, $message, $buttons)->send();
         } else {
-            $message = trans('actions.end_tarif.expired_message', [], $userLang);
+            $message = trans('actions.end_tarif.expired_message', [], $this->userLang);
             Telegram::message($this->chat_id, $message)->send();
         }
+    }
+
+    private function detectUserLanguage()
+    {
+        $user = User::where('telegram_id', $this->chat_id)->first();
+        $this->userLang = $user?->settings?->language ?? 'ru';
     }
 }

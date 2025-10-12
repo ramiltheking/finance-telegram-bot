@@ -10,6 +10,8 @@ use App\Models\User;
 
 class Tarifs extends Webhook
 {
+    private $userLang = 'ru';
+
     public function run()
     {
         // $priceInKZT = '2500.00';
@@ -19,18 +21,17 @@ class Tarifs extends Webhook
         // $message = "🎁 Стартовый период — 2 недели.\n\n📦 Далее взимается тарифная помесячная оплата:\n\n💼 <b>{$tariffName}</b> — {$priceInKZT} ₸ в месяц\n\nНажимая оплатить я даю согласие на регулярные списания, на обработку персональных данных и принимаю условия публичной оферты";
         // InlineButton::web_app("💰 Оплатить {$tariffName} тариф", $url, 1);
 
-        $user = User::where('telegram_id', $this->chat_id)->first();
-        $userLang = $user?->settings?->language ?? 'ru';
+        $this->detectUserLanguage();
 
         $payload = TelegramPaymentService::createSubscriptionPayload($this->chat_id, 'monthly');
 
         $invoiceResponse = Telegram::createInvoiceLink(
-            trans('actions.tarifs.invoice_title', [], $userLang),
-            trans('actions.tarifs.invoice_description', [], $userLang),
+            trans('actions.tarifs.invoice_title', [], $this->userLang),
+            trans('actions.tarifs.invoice_description', [], $this->userLang),
             $payload,
             [
                 [
-                    'label' => trans('actions.tarifs.invoice_label', [], $userLang),
+                    'label' => trans('actions.tarifs.invoice_label', [], $this->userLang),
                     'amount' => 250
                 ]
             ],
@@ -40,18 +41,31 @@ class Tarifs extends Webhook
         if ($invoiceResponse['ok']) {
             $invoiceUrl = $invoiceResponse['result'];
 
-            $message = trans('actions.tarifs.title', [], $userLang) . "\n\n";
-            $message .= trans('actions.tarifs.feature_unlimited', [], $userLang) . "\n";
-            $message .= trans('actions.tarifs.feature_voice', [], $userLang) . "\n";
-            $message .= trans('actions.tarifs.feature_analytics', [], $userLang) . "\n";
-            $message .= trans('actions.tarifs.feature_reminders', [], $userLang) . "\n";
-            $message .= trans('actions.tarifs.feature_export', [], $userLang) . "\n\n";
-            $message .= trans('actions.tarifs.payment_prompt', [], $userLang);
+            $message = trans('actions.tarifs.title', [], $this->userLang) . "\n\n";
+            $message .= trans('actions.tarifs.feature_unlimited', [], $this->userLang) . "\n";
+            $message .= trans('actions.tarifs.feature_voice', [], $this->userLang) . "\n";
+            $message .= trans('actions.tarifs.feature_analytics', [], $this->userLang) . "\n";
+            $message .= trans('actions.tarifs.feature_reminders', [], $this->userLang) . "\n";
+            $message .= trans('actions.tarifs.feature_export', [], $this->userLang) . "\n\n";
+            $message .= trans('actions.tarifs.payment_prompt', [], $this->userLang);
 
-            $buttons = InlineButton::create()->link(trans('actions.tarifs.pay_button', [], $userLang), $invoiceUrl)->get();
-            Telegram::inlineButtons($this->chat_id, $message, $buttons)->send();
+            $buttons = InlineButton::create()->link(trans('actions.tarifs.pay_button', [], $this->userLang), $invoiceUrl, 1)->add(__('buttons.back'), "BackStart", [], 2)->get();
+
+            $isCallbackQuery = $this->request->input('callback_query');
+
+            if ($isCallbackQuery) {
+                Telegram::editButtons($this->chat_id, $message, $buttons, $this->message_id)->send();
+            } else {
+                Telegram::inlineButtons($this->chat_id, $message, $buttons)->send();
+            }
         } else {
-            Telegram::message($this->chat_id, trans('actions.tarifs.invoice_failed', [], $userLang))->send();
+            Telegram::message($this->chat_id, trans('actions.tarifs.invoice_failed', [], $this->userLang))->send();
         }
+    }
+
+    private function detectUserLanguage()
+    {
+        $user = User::where('telegram_id', $this->chat_id)->first();
+        $this->userLang = $user?->settings?->language ?? 'ru';
     }
 }

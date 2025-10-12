@@ -14,14 +14,12 @@ class BackStart extends Webhook
 
     public function run()
     {
-        $user = User::where('telegram_id', $this->chat_id)->first();
-        $userLang = $user?->settings?->language ?? 'ru';
+        $this->detectUserLanguage();
 
-        $first_name = $this->request->input('callback_query')['from']['first_name'];
         $miniapp_url = env('APP_URL') . '/miniapp';
 
         $buttons = InlineButton::create()->add(trans('commands.start.buttons.work_info', [], $this->userLang), 'WorkInfo', [], 1)
-                   ->add("Возможности бота", 'Possibilities', [], 2)
+                   ->add(trans('commands.start.buttons.bot_capabilities', [], $this->userLang), 'Possibilities', [], 2)
                    ->add(trans('commands.start.buttons.tarifs', [], $this->userLang), 'Tarifs', [], 3)
                    ->web_app(trans('commands.start.buttons.statistics', [], $this->userLang), $miniapp_url, 4)
                    ->get();
@@ -32,5 +30,11 @@ class BackStart extends Webhook
         } else {
             return Telegram::editButtons($this->chat_id, trans('messages.welcome_introduction', [], $this->userLang), $buttons, $this->message_id)->send();
         }
+    }
+
+    private function detectUserLanguage()
+    {
+        $user = User::where('telegram_id', $this->chat_id)->first();
+        $this->userLang = $user?->settings?->language ?? 'ru';
     }
 }

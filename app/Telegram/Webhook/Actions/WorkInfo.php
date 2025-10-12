@@ -5,16 +5,25 @@ namespace App\Telegram\Webhook\Actions;
 use App\Facades\Telegram;
 use App\Telegram\Webhook\Webhook;
 use App\Models\User;
+use App\Telegram\Helpers\InlineButton;
 
 class WorkInfo extends Webhook
 {
+    private $userLang = 'ru';
+
     public function run()
     {
-        $user = User::where('telegram_id', $this->chat_id)->first();
-        $userLang = $user?->settings?->language ?? 'ru';
+        $this->detectUserLanguage();
+        $text = $this->generateWorkInfoText($this->userLang);
+        $buttons = InlineButton::create()->add(__('buttons.back'), "BackStart", [], 1)->get();
 
-        $text = $this->generateWorkInfoText($userLang);
-        Telegram::message($this->chat_id, $text)->send();
+        $isCallbackQuery = $this->request->input('callback_query');
+
+        if ($isCallbackQuery) {
+            Telegram::editButtons($this->chat_id, $text, $buttons, $this->message_id)->send();
+        } else {
+            Telegram::inlineButtons($this->chat_id, $text, $buttons)->send();
+        }
     }
 
     private function generateWorkInfoText($lang = 'ru')
@@ -37,5 +46,11 @@ class WorkInfo extends Webhook
             trans('actions.work_info.command_fullreport', [], $lang) . "\n\n" .
             trans('actions.work_info.ai_description', [], $lang) . "\n\n" .
             trans('actions.work_info.final_note', [], $lang);
+    }
+
+    private function detectUserLanguage()
+    {
+        $user = User::where('telegram_id', $this->chat_id)->first();
+        $this->userLang = $user?->settings?->language ?? 'ru';
     }
 }
