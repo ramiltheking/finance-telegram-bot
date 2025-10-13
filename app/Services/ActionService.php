@@ -38,6 +38,13 @@ class ActionService
         return $command->run();
     }
 
+    protected function handleGetOperationsGuide(array $parameters = [])
+    {
+        Telegram::message($this->chat_id, __('messages.ai_actions.guide'))->send();
+
+        return ['handled_action' => 'get_operations_guide'];
+    }
+
     protected function handleGetFullReport(array $parameters = [])
     {
         Telegram::message($this->chat_id, __('messages.ai_actions.processing_full_report'))->send();
@@ -84,6 +91,7 @@ class ActionService
             'get_operations_list' => 'Show transactions history and operations list',
             'get_balance' => 'Display current financial balance',
             'get_weekly_report' => 'Generate weekly financial analytics',
+            'get_operations_guide' => 'Show how to add/edit/delete operations',
         ];
     }
 

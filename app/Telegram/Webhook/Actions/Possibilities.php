@@ -19,7 +19,8 @@ class Possibilities extends Webhook
             ->add(__('buttons.financial_tracking'), "FinancialAccounting", [], 1)
             ->add(__('buttons.financial_analytics'), "FinancialAnalytics", [], 2)
             ->add(__('buttons.personal_categories'), "CustomCategory", [], 3)
-            ->add(__('buttons.back'), "BackStart", [], 4)
+            ->add(__('buttons.export_operations'), "ExportOperations", [], 4)
+            ->add(__('buttons.back'), "BackStart", [], 5)
             ->get();
 
         $isCallbackQuery = $this->request->input('callback_query');

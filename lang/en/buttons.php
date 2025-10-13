@@ -8,9 +8,11 @@ return [
     'financial_tracking' => 'Financial Tracking',
     'financial_analytics' => 'Financial Analytics',
     'personal_categories' => 'Personal Categories',
+    'export_operations' => 'Export Operations',
 
     'statistics' => '💹 Financial statistics',
     'add_category' => '➕ Add personal category',
+    'export' => '📤 Export data',
 
     'start' => '🚀 Start',
     'balance' => '🪙 Balance',

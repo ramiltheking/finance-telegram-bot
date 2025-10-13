@@ -125,12 +125,12 @@ class VoiceMessage extends Webhook
 
             $userText = $type === 'income'
                 ? __('messages.income_text', [
-                    'amount'   => $amount,
+                    'amount'   => number_format($amount, 2, '.', ' '),
                     'currency' => $currency,
                     'title'    => $title,
                 ])
                 : __('messages.expense_text', [
-                    'amount'   => $amount,
+                    'amount'   => number_format($amount, 2, '.', ' '),
                     'currency' => $currency,
                     'title'    => $title,
                 ]);

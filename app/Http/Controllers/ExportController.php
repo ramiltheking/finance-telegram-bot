@@ -26,6 +26,10 @@ class ExportController extends Controller
     {
         $user = Auth::user();
 
+        if (!$user) {
+            return redirect()->route('miniapp.index')->withErrors(['auth' => 'Пользователь не аутентифицирован']);
+        }
+
         if (!UserService::hasAccess($user)) {
             return redirect()->route('miniapp.index')->with('fail', __('export.subscription_required'));
         }

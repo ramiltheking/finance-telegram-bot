@@ -18,10 +18,10 @@ class CustomCategory extends Webhook
         $miniapp_settings_url = env('APP_URL') . '/miniapp/settings';
 
         $buttons = InlineButton::create()
-            ->add("🟩🟩❇️", "Possibilities", [], 1)
+            ->add("🟩🟩❇️⬜", "Possibilities", [], 1)
             ->web_app(__('buttons.add_category'), $miniapp_settings_url, 2)
             ->add(__('buttons.back'), "FinancialAnalytics", [], 3)
-            ->add(__('buttons.menu'), "Possibilities", [], 3)
+            ->add(__('buttons.next'), "ExportOperations", [], 3)
             ->get();
 
         $photoId = null;

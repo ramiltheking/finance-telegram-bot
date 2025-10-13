@@ -8,9 +8,11 @@ return [
     'financial_tracking' => 'Учет финансов',
     'financial_analytics' => 'Финансовая аналитика',
     'personal_categories' => 'Персональные категории',
+    'export_operations' => 'Экспорт операций',
 
     'statistics' => '💹 Финансовая статистика',
     'add_category' => '➕ Добавить категорию',
+    'export' => '📤 Экспорт данных',
 
     'start' => '🚀 Старт',
     'balance' => '🪙 Баланс',

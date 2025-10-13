@@ -43,7 +43,7 @@ class Decline extends Webhook
 
         $text = __('messages.record_rejected') . "\n\n";
         $text .= ($operation->type === 'income' ? __('messages.income_label') : __('messages.expense_label')) . "\n";
-        $text .= __('messages.amount_label', ['amount' => $operation->amount, 'currency' => $operation->currency]) . "\n";
+        $text .= __('messages.amount_label', ['amount' => number_format($operation->amount, 2, '.', ' '), 'currency' => $operation->currency]) . "\n";
         if ($categoryName) {
             $text .= __('messages.category_label', ['category' => $categoryName]) . "\n";
         }

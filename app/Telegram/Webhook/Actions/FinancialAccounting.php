@@ -16,7 +16,7 @@ class FinancialAccounting extends Webhook
         $this->detectUserLanguage();
 
         $buttons = InlineButton::create()
-            ->add("❇️⬜⬜", "Possibilities", [], 1)
+            ->add("❇️⬜⬜⬜", "Possibilities", [], 1)
             ->add(__('buttons.menu'), "Possibilities", [], 2)
             ->add(__('buttons.next'), "FinancialAnalytics", [], 2)
             ->get();

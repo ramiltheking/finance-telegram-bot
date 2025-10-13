@@ -3,17 +3,17 @@
 return [
     'welcome' => "👋 Welcome, :name!",
     'welcome_introduction' => "<b>🤖 I'm your personal finance assistant - Finly</b>\n\n" .
-    "<b>✨ My key Features:</b>\n" .
-    "📝 Smart transaction tracking via text or voice\n" .
-    "📊 Detailed analytics and visualization\n" .
-    "🔔 Custom categories and reminders\n" .
-    "💡 AI-powered financial advice\n\n" .
-    "<b>🚀 Quick Start:</b>\n" .
-    "1️⃣ Type <b>\"Spent 5000 on groceries\"</b>\n" .
-    "2️⃣ Or send a voice message\n" .
-    "3️⃣ I'll automatically recognize and record everything\n\n" .
-    "🎯 <b>Start right now!</b> Just tell me about any financial transaction, and I'll help you track it.\n\n" .
-    "💡 <b>Tip: Try sending a voice message - it works just as easily!</b>",
+        "<b>✨ My key Features:</b>\n" .
+        "📝 Smart transaction tracking via text or voice\n" .
+        "📊 Detailed analytics and visualization\n" .
+        "🔔 Custom categories and reminders\n" .
+        "💡 AI-powered financial advice\n\n" .
+        "<b>🚀 Quick Start:</b>\n" .
+        "1️⃣ Type <b>\"Spent 5000 on groceries\"</b>\n" .
+        "2️⃣ Or send a voice message\n" .
+        "3️⃣ I'll automatically recognize and record everything\n\n" .
+        "🎯 <b>Start right now!</b> Just tell me about any financial transaction, and I'll help you track it.\n\n" .
+        "💡 <b>Tip: Try sending a voice message - it works just as easily!</b>",
     'reminder' => '🔔 Don’t forget to log your operations for today.',
 
     'financial_analytics_title' => "📊 <b>Financial Analytics — Your Personal Financial Advisor!</b>\n\n",
@@ -34,9 +34,11 @@ return [
     'personal_categories_why' => "✨ <b>Why You Need Them:</b>\n– Accurate tracking according to your habits\n– Detailed expense analytics\n– Convenient grouping of operations\n\n",
     'personal_categories_how' => "📱 <b>How to Add:</b>\n1. Open the bot's Mini App\n2. Go to «Settings»\n3. Select «My Categories»\n4. Click «+ Add Category»\n\n",
     'personal_categories_tips' => "💡 <b>Tips:</b>\n\n",
-    'personal_categories_grouping' => "📦 <b>Combine similar expenses into common categories:</b>\n✨ <i>Instead of many small categories — a few clear groups</i>\n  • \"Clothes\", \"Shoes\", \"Accessories\" = <b>Shopping</b>\n  • \"Taxi\", \"Subway\", \"Buses\" = <b>Transport</b>\n  • \"Cinema\", \"Concerts\", \"Entertainment\" = <b>Leisure</b>\n",
-    'personal_categories_naming' => "🏷️ <b>Give categories simple and clear names</b>\n  • It will be easier to select them when adding operations\n  • Example: instead of «Grocery shopping at supermarket» — just «Groceries»\n",
-    'personal_categories_types' => "✅ <b>Carefully choose the category type</b>\n  • «Income» — for money coming in (salary, gifts)\n  • «Expense» — for money going out (purchases, services)\n  • This is important for correct balance calculation",
+    'personal_categories_grouping' => "📦 <b>Combine similar expenses into common categories:</b>\n✨ <i>Instead of many small categories — a few clear groups</i>\n– \"Clothes\", \"Shoes\", \"Accessories\" = <b>Shopping</b>\n– \"Taxi\", \"Subway\", \"Buses\" = <b>Transport</b>\n– \"Cinema\", \"Concerts\", \"Entertainment\" = <b>Leisure</b>\n",
+    'personal_categories_naming' => "🏷️ <b>Give categories simple and clear names</b>\n– It will be easier to select them when adding operations\n– Example: instead of «Grocery shopping at supermarket» — just «Groceries»\n",
+    'personal_categories_types' => "✅ <b>Carefully choose the category type</b>\n– «Income» — for money coming in (salary, gifts)\n– «Expense» — for money going out (purchases, services)\n– This is important for correct balance calculation",
+
+    'export_operations' => "📤 <b>Export Your Transactions</b>\n\n📋 <b>What's included:</b>\n– All income & expenses for 30 days\n– Date and time of each transaction\n– Amounts and categories\n– Transaction currency\n\n📊 <b>Export formats:</b>\n– <b>EXCEL</b> — for analysis & sorting\n– <b>PDF</b> — for printing & documents\n– <b>WORD</b> — for editing\n\n🎯 <b>Why you need it:</b>\n– Personal financial control\n– Creating financial archive\n– Reporting for accountant or tax\n\n⏰ <b>Period:</b> last 30 days\n\n💡 <b>Go to Mini App → select export format → get complete operations list!</b>",
 
     // используется в файлах Text.php & VoiceMessage.php
     'audio_message_exceeds' => '❗ The audio message exceeds 20 seconds. Please send a shorter message.',
@@ -67,5 +69,24 @@ return [
         'processing_operations_list' => "📋 Getting your operations list...",
         'processing_balance' => "🪙 Calculating your current balance...",
         'processing_weekly_report' => "📅 Preparing weekly report...",
+        'guide' => "📝 <b>How to work with operations:</b>\n\n" .
+            "💸 <b>Add operation:</b>\n" .
+            "– Type: \"<code>5000 groceries</code>\"\n" .
+            "– Or: \"<code>+150000 salary</code>\"\n" .
+            "– Or send a voice message\n\n" .
+            "📋 <b>View operations list:</b>\n" .
+            "– Use /list command to see your added operations\n" .
+            "– Or use Mini App for visual representation\n\n" .
+            "✏️ <b>Edit operation:</b>\n" .
+            "– Use /edit (operation number from /list) (amount to change)\n\n" .
+            "🗑️ <b>Delete operation:</b>\n" .
+            "– Use /delete (operation number from /list)\n" .
+            "– Use /delete_last to delete the last added operation\n\n" .
+            "💡 <b>Examples:</b>\n" .
+            "– \"<code>2500 coffee</code>\"\n" .
+            "– \"<code>15000 taxi 01/10/2025</code>\"\n" .
+            "– \"<code>+300000 advance for yesterday</code>\"\n\n" .
+            "🎤 <b>Voice messages</b> work too!\n\n" .
+            "<blockquote>⚠️ You can click on highlighted text</blockquote>",
     ],
 ];

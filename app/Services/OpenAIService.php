@@ -42,7 +42,7 @@ class OpenAIService
     {
         $categories = $this->categoryService->getAvailableCategories($userId);
 
-        $today = now()->format('Y-m-d');
+        $today = now();
 
         $systemPrompt = <<<PROMPT
             You are a strict financial transaction parser. Your job is to **analyze user's text** and return **only a valid JSON** object that describes the transaction.
@@ -57,7 +57,7 @@ class OpenAIService
                 "amount": number,
                 "currency": string,
                 "category": string,
-                "occurred_at": "YYYY-MM-DD"
+                "occurred_at": "YYYY-MM-DD HH:MM:SS"
             }
 
             ### STRICT CATEGORY RULES:
@@ -109,12 +109,18 @@ class OpenAIService
             - Asking for operations list or transaction history → `{ "action": "get_operations_list", "parameters": null }`
             - Requesting balance information → `{ "action": "get_balance", "parameters": null }`
             - Asking for weekly report → `{ "action": "get_weekly_report", "parameters": null }`
+            - Asking how to add/edit operations → `{ "action": "get_operations_guide", "parameters": null }`
+            - Requesting operation management help → `{ "action": "get_operations_guide", "parameters": null }`
 
             ### Action triggers:
             - "show me my financial analytics", "full report", "complete financial history", "all time report" → `get_full_report`
             - "list my transactions", "show my operations", "transaction history", "all my expenses" → `get_operations_list`
             - "what's my balance", "current balance", "how much money do I have" → `get_balance`
             - "weekly report", "last week expenses", "this week summary" → `get_weekly_report`
+            - "how to add operation", "how to add transaction" → `get_operations_guide`
+            - "how to edit operation", "how to change transaction" → `get_operations_guide`
+            - "how to delete operation", "how to remove transaction" → `get_operations_guide`
+            - "how does it work", "how to use" → `get_operations_guide`
             - "help", "how to use", "what can you do" → `help`
 
             When you detect a **financial transaction**, return a full JSON transaction object (as described above).
