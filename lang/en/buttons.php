@@ -13,6 +13,7 @@ return [
     'statistics' => '💹 Financial statistics',
     'add_category' => '➕ Add personal category',
     'export' => '📤 Export data',
+    'tariffs' => '💰 Tariffs',
 
     'start' => '🚀 Start',
     'balance' => '🪙 Balance',

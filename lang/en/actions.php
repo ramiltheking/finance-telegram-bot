@@ -27,6 +27,7 @@ return [
     'tarifs' => [
         'title' => '💎 Premium subscription',
         'feature_unlimited' => '✅ Unlimited number of operations',
+        'feature_personal_categories' => '✅ Accounting for finances by personal categories',
         'feature_voice' => '✅ Voice input of operations with analytics',
         'feature_analytics' => '✅ Extended analytics and reports',
         'feature_reminders' => '✅ Daily personal reminders',

@@ -43,6 +43,7 @@ class Tarifs extends Webhook
 
             $message = trans('actions.tarifs.title', [], $this->userLang) . "\n\n";
             $message .= trans('actions.tarifs.feature_unlimited', [], $this->userLang) . "\n";
+            $message .= trans('actions.tarifs.feature_personal_categories', [], $this->userLang) . "\n";
             $message .= trans('actions.tarifs.feature_voice', [], $this->userLang) . "\n";
             $message .= trans('actions.tarifs.feature_analytics', [], $this->userLang) . "\n";
             $message .= trans('actions.tarifs.feature_reminders', [], $this->userLang) . "\n";

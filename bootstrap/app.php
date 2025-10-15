@@ -36,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command('payments:recurring')->dailyAt('09:00');
+        $schedule->command('subscriptions:check-expiring')->dailyAt('09:00');
         $schedule->command('reminders:check')->everyMinute();
         $schedule->command('reminders:send')->everyMinute();
     })
