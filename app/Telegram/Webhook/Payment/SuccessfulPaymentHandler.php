@@ -73,9 +73,12 @@ class SuccessfulPaymentHandler extends Webhook
 
             $message = trans('payment.successful.payment_completed', ['date' => $endDate], $userLang) . "\n\n";
             $message .= trans('payment.successful.features_unlocked', [], $userLang) . "\n";
-            $message .= "✅ " . trans('payment.successful.feature_unlimited', [], $userLang) . "\n";
-            $message .= "✅ " . trans('payment.successful.feature_voice', [], $userLang) . "\n";
-            $message .= "✅ " . trans('payment.successful.feature_analytics', [], $userLang) . "\n\n";
+            $message .= trans('payment.successful.features_unlimited_operations', [], $userLang) . "\n";
+            $message .= trans('payment.successful.features_personal_categories', [], $userLang) . "\n";
+            $message .= trans('payment.successful.features_analytics', [], $userLang) . "\n";
+            $message .= trans('payment.successful.features_voice', [], $userLang) . "\n";
+            $message .= trans('payment.successful.features_reminders', [], $userLang) . "\n";
+            $message .= trans('payment.successful.features_export', [], $userLang) . "\n\n";
             $message .= trans('payment.successful.thank_you', [], $userLang);
 
             Telegram::message($this->chat_id, $message)->send();

@@ -9,12 +9,9 @@ return [
     ],
 
     'trial_expiring' => [
-        'title' => '⏰ Trial Period Ending',
-        'message' => 'Your free trial <b>ends tomorrow</b> (:date).',
-        'feedback' => '💙 We hope you enjoyed our financial tracking assistant and were able to use all the features and get to know them, having a positive experience during your usage!',
-        'motivation' => '✨ In just a few days, you have already started to better understand your finances! Imagine what clarity will come after a month of regular tracking? 📈',
-        'user_feedback' => '💫 Our users are often surprised how they lived before without such a simple assistant – it becomes a natural part of their financial routine!',
-        'call_to_action' => '🚀 Extend your capabilities and get <b>full access</b> to all features for maximum control over your budget. Click the button below to explore tariffs and renew your subscription:',
+        'title' => '<b>⏰ Trial period ends tomorrow!</b>',
+        'motivation' => 'You\'ve already taken the first step towards <b>financial awareness</b> — now it\'s time to consolidate your results.',
+        'call_to_action' => 'Renew your subscription and get <b>maximum benefits</b> from your financial assistant 💙',
     ],
 
     'features' => [

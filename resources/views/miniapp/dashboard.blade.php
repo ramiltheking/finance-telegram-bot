@@ -32,8 +32,26 @@
         </div>
 
         <div class="card">
-            <h3>{{ __('dashboard.operations') }}</h3>
-            <div class="list operations" id="operations"></div>
+            <div class="operations-header">
+                <h3>{{ __('dashboard.operations') }}</h3>
+                <div class="operations-controls">
+                    <div class="period-selector">
+                        <label class="period-label">{{ __('dashboard.period') }}:</label>
+                        <select id="period-select" class="period-select">
+                            <option value="7days">{{ __('dashboard.period_7days') }}</option>
+                            <option value="30days" selected>{{ __('dashboard.period_30days') }}</option>
+                            <option value="90days">{{ __('dashboard.period_90days') }}</option>
+                            <option value="all">{{ __('dashboard.period_all') }}</option>
+                        </select>
+                    </div>
+                    <div class="operations-filter">
+                        <button class="filter-btn active" data-filter="all">{{ __('dashboard.all') }}</button>
+                        <button class="filter-btn" data-filter="income">{{ __('dashboard.income') }}</button>
+                        <button class="filter-btn" data-filter="expense">{{ __('dashboard.expense') }}</button>
+                    </div>
+                </div>
+            </div>
+            <div class="operations-list" id="operations"></div>
         </div>
 
         <div class="card">

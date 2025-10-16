@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Operation;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -44,17 +45,53 @@ class DashboardController extends Controller
 
         $locale = $user->settings?->language ?? 'ru';
 
-        $from = Carbon::now()->subDays(30);
+        $period = $request->input('period', '30days');
+        $page = $request->input('page', 1);
+        $perPage = 15;
 
-        $operations = Operation::where('user_id', $telegramId)
-            ->where('occurred_at', '>=', $from)
+        switch ($period) {
+            case '7days':
+                $from = Carbon::now()->subDays(7);
+                break;
+            case '30days':
+                $from = Carbon::now()->subDays(30);
+                break;
+            case '90days':
+                $from = Carbon::now()->subDays(90);
+                break;
+            case 'all':
+                $from = null;
+                break;
+            default:
+                $from = Carbon::now()->subDays(30);
+        }
+
+        $query = Operation::where('user_id', $telegramId)
             ->where('status', 'confirmed')
-            ->with(['categoryRelation'])
-            ->orderByDesc('occurred_at')
+            ->with(['categoryRelation']);
+
+        if ($from) {
+            $query->where('occurred_at', '>=', $from);
+        }
+
+        $totalOperations = $query->count();
+
+        $operations = $query->orderByDesc('occurred_at')
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
             ->get();
 
+        $chartQuery = Operation::where('user_id', $telegramId)
+            ->where('status', 'confirmed');
+
+        if ($from) {
+            $chartQuery->where('occurred_at', '>=', $from);
+        }
+
+        $operationsForChart = $chartQuery->get();
+
         $categories = [];
-        foreach ($operations as $operation) {
+        foreach ($operationsForChart as $operation) {
             $categoryName = $this->categoryService->getCategoryName($operation, $locale);
             if (!isset($categories[$categoryName])) {
                 $categories[$categoryName] = 0;
@@ -62,8 +99,9 @@ class DashboardController extends Controller
             $categories[$categoryName] += $operation->amount;
         }
 
-        $formattedOperations = $operations->take(10)->map(function ($operation) use ($locale) {
+        $formattedOperations = $operations->map(function ($operation) use ($locale) {
             return [
+                'id' => $operation->id,
                 'type' => $operation->type,
                 'amount' => $operation->amount,
                 'currency' => $operation->currency,
@@ -101,15 +139,66 @@ class DashboardController extends Controller
                 'categories' => [],
                 'operations' => [],
                 'subscription' => $subscription ?? ['status' => 'expired', 'message' => __('dashboard.pay_again')],
+                'pagination' => [
+                    'current_page' => $page,
+                    'per_page' => $perPage,
+                    'total' => $totalOperations,
+                    'has_more' => false,
+                    'period' => $period
+                ]
             ]);
         }
 
+        $hasMore = ($page * $perPage) < $totalOperations;
+
         return response()->json([
-            'emptyOperations' => $operations->isEmpty(),
-            'messageOperations' => $operations->isEmpty() ? __('dashboard.operations_not_found') : null,
+            'emptyOperations' => false,
+            'messageOperations' => null,
             'categories' => $categories,
             'operations' => $formattedOperations,
             'subscription' => $subscription ?? ['status' => 'expired', 'message' => __('dashboard.pay_again')],
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $totalOperations,
+                'has_more' => $hasMore,
+                'period' => $period
+            ]
         ]);
+    }
+
+    public function delete(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return redirect()->route('miniapp.index')->withErrors(['auth' => 'Пользователь не аутентифицирован']);
+            }
+
+            $userId = $user->telegram_id;
+            $operationId = $request->input('operationId');
+
+            $operation = Operation::findOrFail($operationId);
+
+            if ($operation->user_id !== $userId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Доступ запрещен'
+                ], 403);
+            }
+
+            $operation->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Операция успешно удалена'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ошибка удаления операции'
+            ], 500);
+        }
     }
 }

@@ -9,9 +9,12 @@ return [
         'payment_error' => '❌ Payment processing error. Please contact support.',
 
         'features_unlocked' => 'Now you have access to all features:',
-        'feature_unlimited' => 'Unlimited number of operations',
-        'feature_voice' => 'Voice input of operations',
-        'feature_analytics' => 'Extended analytics',
+        'features_analytics' => '📊 Advanced financial analytics',
+        'features_voice' => '🎤 Voice message processing',
+        'features_reminders' => '🔔 Smart reminders',
+        'features_export' => '📤 Data export to Excel/PDF/Word',
+        'features_unlimited_operations' => '💰 Unlimited operations',
+        'features_personal_categories' => '🗂️ Accounting for finances by personal categories',
         'thank_you' => 'Thank you for your purchase! 🎉',
 
         'log' => [

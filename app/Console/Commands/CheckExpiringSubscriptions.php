@@ -120,13 +120,9 @@ class CheckExpiringSubscriptions extends Command
     private function sendTrialExpirationWarning(User $user)
     {
         $language = $user->settings->language ?? 'ru';
-        $expirationDate = $user->trial_ends_at->format('d.m.Y');
 
         $message = __('notifications.trial_expiring.title', [], $language) . "\n\n";
-        $message .= __('notifications.trial_expiring.message', ['date' => $expirationDate], $language) . "\n\n";
-        $message .= __('notifications.trial_expiring.feedback', [], $language) . "\n\n";
         $message .= __('notifications.trial_expiring.motivation', [], $language) . "\n\n";
-        $message .= __('notifications.trial_expiring.user_feedback', [], $language) . "\n\n";
         $message .= __('notifications.trial_expiring.call_to_action', [], $language);
 
         $buttons = InlineButton::create()

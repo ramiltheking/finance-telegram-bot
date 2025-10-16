@@ -25,6 +25,7 @@ Route::get('/telegram-required', function () {
 Route::prefix('miniapp')->middleware([TelegramAuth::class, SetUserLocale::class])->group(function () {
     Route::get('/', [DashboardController::class, 'dashboard'])->name('miniapp.index');
     Route::post('/dashboard/data', [DashboardController::class, 'dashboardData']);
+    Route::post('/operations/delete', [DashboardController::class, 'delete'])->name('miniapp.operations.delete');
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('miniapp.profile');
     Route::post('/profile/data', [ProfileController::class, 'profileData']);
