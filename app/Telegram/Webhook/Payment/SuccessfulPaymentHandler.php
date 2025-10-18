@@ -36,7 +36,7 @@ class SuccessfulPaymentHandler extends Webhook
                 'invoice_payload' => $successfulPayment['invoice_payload'],
             ]);
 
-            $this->sendSuccessMessage($payment, $userLang);
+            $this->sendSuccessMessage($payment, $userLang, $user);
 
         } catch (\Exception $e) {
             Log::error(trans('payment.successful.log.exception', [], $userLang), [
@@ -52,7 +52,7 @@ class SuccessfulPaymentHandler extends Webhook
         }
     }
 
-    private function sendSuccessMessage($payment, $userLang)
+    private function sendSuccessMessage($payment, $userLang, $user)
     {
         if (!$payment) {
             Log::error(trans('payment.successful.log.payment_null', [], $userLang), [
@@ -82,6 +82,13 @@ class SuccessfulPaymentHandler extends Webhook
             $message .= trans('payment.successful.thank_you', [], $userLang);
 
             Telegram::message($this->chat_id, $message)->send();
+
+            $devMessage = "💳 Новый платеж\n";
+            $devMessage .= "Пользователь: @{$user->username} ({$this->chat_id})\n";
+            $devMessage .= "Сумма: {$payment->amount} {$payment->currency}\n";
+            $devMessage .= "Подписка до: {$endDate}";
+
+            Telegram::message(env('TELEGRAM_DEV_CHAT'), $devMessage)->send();
         } else {
             Log::warning(trans('payment.successful.log.user_not_found', [], $userLang), [
                 'payment_id' => $payment->id,

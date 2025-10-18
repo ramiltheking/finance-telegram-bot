@@ -22,7 +22,11 @@ let hasMore = false;
 let chart;
 
 function initializeControls() {
-    document.getElementById('period-select').addEventListener('change', function(e) {
+    if (typeof initOperationEditor === 'function') {
+        initOperationEditor(tg);
+    }
+
+    document.getElementById('period-select').addEventListener('change', function (e) {
         currentPeriod = e.target.value;
         currentPage = 1;
         reloadAllData();
@@ -77,19 +81,27 @@ function renderOperations(operations) {
         const typeClass = isIncome ? 'op-income' : 'op-expense';
         const formattedAmount = new Intl.NumberFormat('ru-RU').format(op.amount);
 
+        const isStandard = isStandardCategory(op.type, op.category);
+
         return `
-            <div class="operation" data-operation-id="${op.id}">
+            <div class="operation editable"
+                 data-operation-id="${op.id}"
+                 onclick="openEditModal(${JSON.stringify(op).replace(/"/g, '&quot;')})">
                 <div class="op-icon ${typeClass}">
                     ${isIncome ? '+' : '−'}
                 </div>
                 <div class="op-details">
-                    <div class="op-category">${op.category}</div>
+                    <div class="op-category">
+                        ${op.category}
+                        ${isStandard ? `<span class="standard-badge">${window.i18n.standard_badge}</span>` : ''}
+                    </div>
                     <div class="op-date">${op.occurred_at || ''}</div>
+                    ${op.description ? `<div class="op-description">${op.description}</div>` : ''}
                 </div>
                 <div class="op-amount ${isIncome ? 'income' : 'expense'}">
                     ${isIncome ? '+' : '−'}${formattedAmount} ${op.currency}
                 </div>
-                <button class="delete-btn" onclick="deleteOperation('${op.id}', this.parentElement)">
+                <button class="delete-btn" onclick="event.stopPropagation(); deleteOperation('${op.id}', this.parentElement)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                         <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
                         <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
@@ -100,6 +112,14 @@ function renderOperations(operations) {
     }).join('');
 }
 
+function isStandardCategory(type, category) {
+    const standardCategories = {
+        income: ['Зарплата', 'Фриланс', 'Инвестиции', 'Подарки', 'Возврат долга', 'Прочие доходы'],
+        expense: ['Продукты', 'Транспорт', 'Жилье', 'Развлечения', 'Здоровье', 'Одежда', 'Образование', 'Путешествия', 'Рестораны', 'Прочие расходы']
+    };
+
+    return standardCategories[type]?.includes(category) || false;
+}
 async function loadMoreOperations() {
     if (isLoading || !hasMore) return;
 
@@ -204,7 +224,7 @@ function updateSubscription(sub) {
 
     const payBtn = document.getElementById('pay-btn');
     if (payBtn) {
-        payBtn.addEventListener('click', function() {
+        payBtn.addEventListener('click', function () {
             window.location.href = "/miniapp/tarifs";
             setTimeout(() => {
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
@@ -338,6 +358,8 @@ function showError(message) {
         timer: 3000
     });
 }
+
+window.reloadAllData = reloadAllData;
 
 (async () => {
     try {

@@ -10,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="/css/dashboard.css">
     <script src="/js/checkFromTelegram.js"></script>
+    <script src="/js/editOperation.js"></script>
 </head>
 
 <body>
@@ -63,6 +64,50 @@
             </div>
         </div>
     </main>
+
+    <div id="editOperationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">{{ __('dashboard.edit_operation') }}</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="editOperationForm" class="modal-form">
+                <input type="hidden" id="editOperationId">
+                <input type="hidden" id="editOperationType">
+
+                <div class="form-group">
+                    <label for="editAmount">{{ __('dashboard.amount') }} *</label>
+                    <input type="number" id="editAmount" name="amount" step="0.01" min="0.01" required>
+                    <div class="error-message" id="amountError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editCategory">{{ __('dashboard.category') }} *</label>
+                    <select id="editCategory" name="category" required>
+                        <option value="">{{ __('dashboard.choose_category') }}</option>
+                    </select>
+                    <div class="error-message" id="categoryError"></div>
+                </div>
+
+                <div class="form-group" id="customCategoryGroup" style="display: none;">
+                    <label for="editCustomCategory">{{ __('dashboard.new_category') }} *</label>
+                    <input type="text" id="editCustomCategory" name="custom_category" maxlength="50">
+                    <div class="error-message" id="customCategoryError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editDescription">{{ __('dashboard.description') }}</label>
+                    <textarea id="editDescription" name="description" rows="3" maxlength="255"
+                              placeholder="Необязательное описание операции"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" id="cancelEdit">{{ __('dashboard.cancel') }}</button>
+                    <button type="submit" class="btn-save" id="saveEdit">{{ __('dashboard.save') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     @if (session('success'))
         <script>
